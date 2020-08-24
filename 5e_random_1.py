@@ -1,5 +1,5 @@
 from random import randint
-from more_itertools import unique_everseen
+# from more_itertools import unique_everseen
 from time import sleep
 print ()
 """
@@ -180,6 +180,7 @@ languages = [
                 "DWARVEN",
                 "ELVEN",
                 "GIANT",
+                "GITH",
                 "GNOMISH",
                 "GOBLIN",
                 "HALFLING",
@@ -230,6 +231,12 @@ martial_wpns = [
                 "WARHAMMER",
                 "WHIP"
                 ]
+armor = [
+        "LIGHT",
+        "MEDIUM",
+        "HEAVY",
+        "SHIELDS"
+        ]   
 saves = [
                 "STRENGTH",
                 "DEXTERITY",
@@ -269,7 +276,7 @@ bard_spell_0 = [
                 "PRESTIDIGITATION",
                 "TRUE STRIKE",
                 "VICIOUS MOCKERY",
-                "THUNDERCLAP (EE)"
+                "THUNDERCLAP (XAN)"
                 ]
 cleric_spell_0 = [
                 "GUIDANCE",
@@ -279,6 +286,8 @@ cleric_spell_0 = [
                 "SACRED FLAME",
                 "SPARE THE DYING",
                 "THAUMATURGY",
+                "TOLL THE DEAD (XAN)",
+                "WORD OF RADIANCE (XAN)"
                 ]
 druid_spell_0 = [
                 "DRUIDCRAFT",
@@ -289,14 +298,15 @@ druid_spell_0 = [
                 "RESISTANCE",
                 "SHILLELAGH",
                 "THORN WHIP",
-                "CREATE BONFIRE (EE)",
-                "CONTROL FLAMES (EE)",
-                "FROSTBITE (EE)",
-                "GUST (EE)",
-                "MAGIC STONE (EE)",
-                "MOLD EARTH (EE)",
-                "SHAPE WATER (EE)",
-                "THUNDERCLAP (EE)"
+                "CREATE BONFIRE (XAN)",
+                "CONTROL FLAMES (XAN)",
+                "FROSTBITE (XAN)",
+                "GUST (XAN)",
+                "MAGIC STONE (XAN)",
+                "MOLD EARTH (XAN)",
+                "PRIMAL SAVAGERY (XAN)",
+                "SHAPE WATER (XAN)",
+                "THUNDERCLAP (XAN)"
                 ]
 sorc_spell_0 = [
                 "ACID SPLASH",
@@ -315,13 +325,14 @@ sorc_spell_0 = [
                 "RAY OF FROST",
                 "SHOCKING GRASP",
                 "TRUE STRIKE",
-                "CREATE BONFIRE (EE)",
-                "CONTROL FLAMES (EE)",
-                "FROSTBITE (EE)",
-                "GUST (EE)",
-                "MOLD EARTH (EE)",
-                "SHAPE WATER (EE)",
-                "THUNDERCLAP (EE)"
+                "CREATE BONFIRE (XAN)",
+                "CONTROL FLAMES (XAN)",
+                "FROSTBITE (XAN)",
+                "GUST (XAN)",
+                "MOLD EARTH (XAN)",
+                "SHAPE WATER (XAN)",
+                "THUNDERCLAP (XAN)",
+                "INFESTATION (XAN)"
                 ]
 warlock_spell_0 = [
                 "BLADE WARD",
@@ -333,10 +344,12 @@ warlock_spell_0 = [
                 "POISON SPRAY",
                 "PRESTIDIGITATION",
                 "TRUE STRIKE",
-                "CREATE BONFIRE (EE)",
-                "FROSTBITE (EE)",
-                "MAGIC STONE (EE)",
-                "THUNDERCLAP (EE)"
+                "CREATE BONFIRE (XAN)",
+                "FROSTBITE (XAN)",
+                "INFESTATION (XAN)",
+                "MAGIC STONE (XAN)",
+                "THUNDERCLAP (XAN)",
+                "TOLL THE DEAD (XAN)"
                 ]
 wiz_spell_0 = [
                 "ACID SPLASH",
@@ -355,13 +368,15 @@ wiz_spell_0 = [
                 "RAY OF FROST",
                 "SHOCKING GRASP",
                 "TRUE STRIKE",
-                "CREATE BONFIRE (EE)",
-                "CONTROL FLAMES (EE)",
-                "FROSTBITE (EE)",
-                "GUST (EE)",
-                "MOLD EARTH (EE)",
-                "SHAPE WATER (EE)",
-                "THUNDERCLAP (EE)"
+                "CREATE BONFIRE (XAN)",
+                "CONTROL FLAMES (XAN)",
+                "FROSTBITE (XAN)",
+                "GUST (XAN)",
+                "INFESTATION (XAN)",
+                "MOLD EARTH (XAN)",
+                "SHAPE WATER (XAN)",
+                "THUNDERCLAP (XAN)",
+                "TOLL THE DEAD (XAN)"
                 ]
 
 bard_spell_1 = [
@@ -386,7 +401,7 @@ bard_spell_1 = [
                 "TASHA'S HIDEOUS LAUGHTER",
                 "THUNDERWAVE",
                 "UNSEEN SERVANT",
-                "EARTH TREMOR (EE)"
+                "EARTH TREMOR (XAN)"
                 ]
 cleric_spell_1 = [
                 "BANE",
@@ -403,7 +418,8 @@ cleric_spell_1 = [
                 "PROTECTION FROM EVIL AND GOOD",
                 "PURIFY FOOD AND DRINK",
                 "SANCTUARY",
-                "SHIELD OF FAITH"
+                "SHIELD OF FAITH",
+                "CEREMONY (XAN)"
                 ]
 druid_spell_1 = [
                 "ANIMAL FRIENDSHIP",
@@ -422,10 +438,10 @@ druid_spell_1 = [
                 "PURIFY FOOD AND DRINK",
                 "SPEAK WITH ANIMALS",
                 "THUNDERWAVE",
-                "ABSORB ELEMENTS (EE)",
-                "BEAST BOND (EE)",
-                "ICE KNIFE (EE)",
-                "EARTH TREMOR (EE)"
+                "ABSORB ELEMENTS (XAN)",
+                "BEAST BOND (XAN)",
+                "ICE KNIFE (XAN)",
+                "SNARE (XAN)"
                 ]
 sorc_spell_1 = [
                 "BURNING HANDS",
@@ -448,9 +464,11 @@ sorc_spell_1 = [
                 "SLEEP",
                 "THUNDERWAVE",
                 "WITCH BOLT",
-                "CATAPULT (EE)",
-                "ICE KNIFE (EE)",
-                "EARTH TREMOR (EE)"
+                "ABSORB ELEMENTS (XAN)",
+                "CHAOS BOLT (XAN)",
+                "CATAPULT (XAN)",
+                "ICE KNIFE (XAN)",
+                "EARTH TREMOR (XAN)"
                 ]
 warlock_spell_1 = [
                 "ARMOR OF AGATHYS",
@@ -463,7 +481,8 @@ warlock_spell_1 = [
                 "ILLUSORY SCRIPT",
                 "PROTECTION FROM EVIL AND GOOD",
                 "UNSEEN SERVANT",
-                "WITCH BOLT"
+                "WITCH BOLT",
+                "CAUSE FEAR (XAN)"
                 ]
 wiz_spell_1 = [
                 "ALARM",
@@ -496,10 +515,12 @@ wiz_spell_1 = [
                 "THUNDERWAVE",
                 "UNSEEN SERVANT",
                 "WITCH BOLT"
-                "ABSORB ELEMENTS (EE)",
-                "CATAPULT (EE)",
-                "ICE KNIFE (EE)",
-                "EARTH TREMOR (EE)"
+                "ABSORB ELEMENTS (XAN)",
+                "CATAPULT (XAN)",
+                "CAUSE FEAR (XAN)",
+                "SNARE (XAN)",
+                "ICE KNIFE (XAN)",
+                "EARTH TREMOR (XAN)"
                 ]
 
 # Empty lists for Spellbooks (by Spell level)
@@ -525,7 +546,7 @@ def get_skill(skill_set):
             if item == chosen_skill:
                 avail_skills.remove(item)
         # Then start over with the list of available skills
-        chosen_skill = get_skill(avail_skills)
+        get_skill(avail_skills)
 
     else:
         # Otherwise, add proficiency bonus to that skill's modifier
@@ -548,18 +569,23 @@ def get_expertise(skill_set):
     # Return a random skill from skill set
     chosen_skill = get_item(skill_set)
 
-    # Add proficiency bonus to skill modifier
-    skill_modifiers[(chosen_skill)] += 2
+    # For Thieves' Tools, update Proficiency list to reflect Expertise
+    if chosen_skill == "THIEVES' TOOLS":
+        proficiencies.remove("Tools (THIEVES' TOOLS)")
+        proficiencies.append("Tools (THIEVES' TOOLS) *EXPERTISE*")
+    else:
+        # Otherwise, add proficiency bonus to skill modifier
+        skill_modifiers[(chosen_skill)] += 2
 
-    # Find/Remove skill in list of available skills
-    for item in avail_skills:
-        if item == chosen_skill:
-            avail_skills.remove(item)
+        # Find/Remove skill in list of available skills
+        for item in avail_skills:
+            if item == chosen_skill:
+                avail_skills.remove(item)
 
-    # Find/Remove skill in original skill set
-    for item in skill_set:
-        if item == chosen_skill:
-            skill_set.remove(item)
+        # Find/Remove skill in original skill set
+        for item in skill_set:
+            if item == chosen_skill:
+                skill_set.remove(item)
 
 # Gain proficiency in a specific item from a group
 def get_proficiency(chosen_item, group=avail_profs):
@@ -586,6 +612,8 @@ def get_proficiency(chosen_item, group=avail_profs):
         chosen_item = "Weapons ({0})".format(chosen_item)
     if group == saves:
         chosen_item = "Saving Throws ({0})".format(chosen_item)
+    if group == armor:
+        chosen_item = "Armor ({0})".format(chosen_item)
 
     proficiencies.append(chosen_item)
    
@@ -828,7 +856,7 @@ def get_feat():
         return "MAGE SLAYER"
     if chosen_feat == "MAGIC INITIATE":
 
-        initiate_classes = ["BARD", "CLERIC", "DRUID", "SORCEROR", "WARLOCK", "WIZARD"]
+        initiate_classes = ["BARD", "CLERIC", "DRUID", "SORCERER", "WARLOCK", "WIZARD"]
         chosen_class = get_item(initiate_classes)
 
         if chosen_class == "BARD":
@@ -836,14 +864,14 @@ def get_feat():
             get_spell("GET", bard_spell_0, spellbook_0)
             initiate_spell = get_item(bard_spell_1)
         if chosen_class == "CLERIC":
-            get_spell("GET", cler_spell_0, spellbook_0)
-            get_spell("GET", cler_spell_0, spellbook_0)
-            initiate_spell = get_item(cler_spell_1)
+            get_spell("GET", cleric_spell_0, spellbook_0)
+            get_spell("GET", cleric_spell_0, spellbook_0)
+            initiate_spell = get_item(cleric_spell_1)
         if chosen_class == "DRUID":
             get_spell("GET", druid_spell_0, spellbook_0)
             get_spell("GET", druid_spell_0, spellbook_0)
             initiate_spell = get_item(druid_spell_1)
-        if chosen_class == "SORCEROR":
+        if chosen_class == "SORCERER":
             get_spell("GET", sorc_spell_0, spellbook_0)
             get_spell("GET", sorc_spell_0, spellbook_0)
             initiate_spell = get_item(sorc_spell_1)
@@ -972,7 +1000,7 @@ def get_feat():
         return "POLEARM MASTER"
     if chosen_feat == "RESILIENT":
 
-        chosen_stat = get_item(attributes)
+        chosen_stat = get_item(avail_attributes)
 
         ability_scores[(chosen_stat)] += 1
         
@@ -986,13 +1014,13 @@ def get_feat():
 
         while ability_scores[("INTELLIGENCE")] < 13 and ability_scores[("WISDOM")] < 13:
             avail_feats.remove("RITUAL CASTER")
-            feat = get_item(avail_feats)
+            get_item(avail_feats)
 
         ritual_classes = [
                         "BARD",
                         "CLERIC",
                         "DRUID",
-                        "SORCEROR",
+                        "SORCERER",
                         "WARLOCK",
                         "WIZARD"]
         bard_ritual = [
@@ -1031,6 +1059,16 @@ def get_feat():
                         "UNSEEN SERVANT",
                         ]
 
+        if ability_scores["INTELLIGENCE"] < 13:
+            ritual_classes.remove("WIZARD")
+        if ability_scores["WISDOM"] < 13:
+            ritual_classes.remove("CLERIC")
+            ritual_classes.remove("DRUID")
+        if ability_scores["CHARISMA"] < 13:
+            ritual_classes.remove("BARD")
+            ritual_classes.remove("SORCERER")
+            ritual_classes.remove("WARLOCK")
+        
         chosen_class = get_item(ritual_classes)
 
         if chosen_class == "BARD":
@@ -1048,7 +1086,7 @@ def get_feat():
             get_spell("GET", druid_ritual, spellbook_1)
             spell_ability = "WISDOM"
         
-        if chosen_class == "SORCEROR":
+        if chosen_class == "SORCERER":
             get_spell("GET", sorc_ritual, spellbook_1)
             get_spell("GET", sorc_ritual, spellbook_1)
             spell_ability = "CHARISMA"
@@ -1109,13 +1147,11 @@ def get_feat():
 
         def get_skilled():
 
-            skilled_options = ["SKILL", "TOOL"]
+            skill_or_tool = randint(1,2)
 
-            skilled_choice = get_item(skilled_options)
-
-            if skilled_choice == "SKILL":
+            if skill_or_tool == 1:
                 get_skill(avail_skills)
-            if skilled_choice == "TOOL":
+            else:
                 get_proficiency("GET", tools)
         
         get_skilled()
@@ -1188,7 +1224,7 @@ def get_feat():
 
         stat_bump("STRENGTH", "DEXTERITY")
 
-        race_features.app("WEAPON MASTER: Gain Prof: 4 additional weapons")
+        race_features.append("WEAPON MASTER: Gain Prof: 4 additional weapons")
 
         def master_weapon():
 
@@ -1401,7 +1437,7 @@ def get_race():
         if chosen_variant == "B":
             chosen_stat_1 = raise_stat_by(1)
             chosen_stat_2 = raise_stat_by(1)
-            # Function removes chosen stats fron list, so:
+            # Function removes chosen stats from list, so:
             avail_attributes.append(chosen_stat_1)
             avail_attributes.append(chosen_stat_2)
             
@@ -1504,14 +1540,14 @@ def get_race():
             ability_scores["INTELLIGENCE"] += 1
 
             get_darkvision(60)
-            race_features.append("Gain 1 Cantrip (Use INT as spell ability_scores)")
+            race_features.append("Gain 1 Cantrip (Use INT as spell ability)")
             race_features.append("")
         
             cantrip_class = [
                             "BARD",
                             "CLERIC",
                             "DRUID",
-                            "SORCEROR",
+                            "SORCERER",
                             "WARLOCK",
                             "WIZARD"
                             ]
@@ -1523,7 +1559,7 @@ def get_race():
                 get_spell("GET", cleric_spell_0, spellbook_0)
             if chosen_cantrip == "DRUID":
                 get_spell("GET", druid_spell_0, spellbook_0)
-            if chosen_cantrip == "SORCEROR":
+            if chosen_cantrip == "SORCERER":
                 get_spell("GET", sorc_spell_0, spellbook_0)
             if chosen_cantrip == "WARLOCK":
                 get_spell("GET", warlock_spell_0, spellbook_0)
@@ -2458,6 +2494,83 @@ def get_race():
         get_proficiency("ABYSSAL", languages)
         get_proficiency("DRACONIC", languages)
 
+    if chosen_race == "GITH":
+
+        def get_githyanki_align():
+
+            roll_alignment = randint(1,100)
+            if roll_alignment < 40:
+                char_align = "LAWFUL EVIL"
+            if roll_alignment < 60:
+                char_align = "LAWFUL NEUTRAL"
+            elif roll_alignment < 80:
+                char_align = "NEUTRAL EVIL"
+            elif roll_alignment < 90:
+                char_align = "CHAOTIC NEUTRAL"
+            else:
+                char_align = "CHAOTIC EVIL"
+            race_features.append(char_align)
+            race_features.append("")
+        def get_githzerai_align():
+
+            roll_alignment = randint(1,100)
+            if roll_alignment < 40:
+                char_align = "LAWFUL NEUTRAL"
+            if roll_alignment < 60:
+                char_align = "TRUE NEUTRAL"
+            elif roll_alignment < 80:
+                char_align = "NEUTRAL GOOD"
+            elif roll_alignment < 90:
+                char_align = "LAWFUL GOOD"
+            else:
+                char_align = "CHAOTIC GOOD"
+            race_features.append(char_align)
+            race_features.append("")
+
+        gith_subrace = ["GITHYANKI", "GITHZERAI"]
+        chosen_race = get_item(gith_subrace)
+
+        race_features.append(chosen_race)
+        race_features.append("")
+
+        ability_scores["INTELLIGENCE"] += 1
+
+        get_age(15, 25, 45, 60)
+        get_speed(30)
+        get_proficiency("GITH", languages)
+
+        race_features.append("PSIONICS: You know the Mage Hand cantrip, and the")
+        race_features.append("    hand is invisible to you when you cast it.")
+        
+        if chosen_race == "GITHYANKI":
+            
+            ability_scores["STRENGTH"] += 2
+            
+            get_githyanki_align()
+            get_size(24, 60, 8, 100)
+            
+            skill_or_tool = randint(1,2)
+            if skill_or_tool == 1:
+                get_proficiency("GET", avail_skills)
+            else:
+                get_proficiency("GET", tools)
+            
+            get_proficiency("GET", languages)
+            get_proficiency("LIGHT", armor)
+            get_proficiency("MEDIUM", armor)
+            get_proficiency("SHORT SWORD", martial_wpns)
+            get_proficiency("LONGSWORD", martial_wpns)
+            get_proficiency("GREATSWORD", martial_wpns)
+        
+        if chosen_race == "GITHZERAI":
+            
+            ability_scores["WISDOM"] += 2
+            
+            get_githzerai_align()
+            get_size(24, 59, 4, 90)
+            
+            race_features.append("ADV: Saves v. Charmed / Frightened condition")
+
     return chosen_race
 
 print (get_race())
@@ -2483,7 +2596,7 @@ clss = [
         "PALADIN",
         "RANGER",
         "ROGUE",
-        "SORCEROR",
+        "SORCERER",
         "WARLOCK",
         "WIZARD"
         ]
@@ -2563,19 +2676,28 @@ def get_class():
         
         for item in items_to_add:
             inventory.append(item)
+
+    if ability_scores["STRENGTH"] < 14 and ability_scores["DEXTERITY"] < 14:
+        clss.remove("FIGHTER")
+    if ability_scores["STRENGTH"] < 14 and ability_scores["CONSTITUTION"] < 14:
+        clss.remove("BARBARIAN")
+    if ability_scores["STRENGTH"] < 14 and ability_scores["CHARISMA"] < 14:
+        clss.remove("PALADIN")
+    if ability_scores["DEXTERITY"] < 14:
+        clss.remove("MONK")
+        clss.remove("ROGUE")
+    if ability_scores["DEXTERITY"] < 14 and ability_scores["WISDOM"] < 14:
+        clss.remove("RANGER")
+    if ability_scores["INTELLIGENCE"] < 14:
+        clss.remove("WIZARD")
+    if ability_scores["WISDOM"] < 14:
+        clss.remove("CLERIC")
+        clss.remove("DRUID")
+    if ability_scores["CHARISMA"] < 14:
+        clss.remove("BARD")
+        clss.remove("SORCERER")
+        clss.remove("WARLOCK")
     
-    def get_domain_spells(spell_1, spell_2):
-
-        domain_spells = "DOMAIN SPELLS (always prepared): {0} / {1}".format(spell_1, spell_2)
-        class_features.append(domain_spells)
-        class_features.append("")
-
-        spell_1 = "(Domain) {0}".format(spell_1)
-        spell_2 = "(Domain) {0}".format(spell_2)
-        
-        spellbook_1.append(spell_1)
-        spellbook_1.append(spell_2)
-
     chosen_class = get_item(clss)
 
     if chosen_class == "BARBARIAN":
@@ -2677,6 +2799,18 @@ def get_class():
 
     if chosen_class == "CLERIC":
 
+        def get_domain_spells(spell_1, spell_2):
+
+            domain_spells = "DOMAIN SPELLS (always prepared): {0} / {1}".format(spell_1, spell_2)
+            class_features.append(domain_spells)
+            class_features.append("")
+
+            spell_1 = "(Domain) {0}".format(spell_1)
+            spell_2 = "(Domain) {0}".format(spell_2)
+            
+            spellbook_1.append(spell_1)
+            spellbook_1.append(spell_2)
+
         cler_domain = [
                     "KNOWLEDGE",
                     "LIFE",
@@ -2776,13 +2910,14 @@ def get_class():
             
         if chosen_domain == "NATURE":
 
+            get_spell("GET", druid_spell_0, spellbook_0)
+            druid_cantrip = spellbook_0[(len(spellbook_0)-1)]
+
             get_domain_spells("ANIMAL FRIENDSHIP", "SPEAK WITH ANIMALS")
-            class_features.append("Gain Druid cantrip: {0}".format(char_druid_0))
+            class_features.append("Gain Druid cantrip: {0}".format(druid_cantrip))
             class_features.append("")
             
             get_proficiency("Armor (HEAVY)")
-
-            get_spell("GET", druid_spell_0, spellbook_0)
 
             domain_skills = [
                         "ANIMAL HANDLING",
@@ -2978,12 +3113,10 @@ def get_class():
         class_features.append("       : Make one unarmed strike as [Bonus] when using [Attack]")
         class_features.append("")
             
-        tool_or_inst = ["T", "I"]
-        roll_tool_inst = get_item(tool_or_inst)
-        
-        if tool_or_inst[0] == "T":
+        tool_or_inst = randint(1,2)
+        if tool_or_inst == 1:
             get_proficiency("GET", tools)
-        if tool_or_inst[0] == "I":
+        else:
             get_proficiency("GET", instruments)
 
         get_proficiency("SIMPLE", simple_wpns)
@@ -3175,8 +3308,8 @@ def get_class():
         class_features.append("")
             
         get_proficiency("MARTIAL", martial_wpns)
-        get_proficiency("Armor (MEDIUM)")
-        get_proficiency("Armor (SHIELDS)")
+        get_proficiency("MEDIUM", armor)
+        get_proficiency("SHIELDS", armor)
         get_proficiency("STRENGTH", saves)
         get_proficiency("DETERITY", saves)
 
@@ -3196,7 +3329,7 @@ def get_class():
         get_inventory("SCALE MAIL", "LEATHER ARMOR")
         get_inventory("TWO SHORT SWORDS", "TWO SIMPLE MELEE")
         get_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
-        get_inventory("LONGBOW", martial_wpns)
+        get_inventory("LONGBOW", "MARTIAL WEAPON")
 
     if chosen_class == "ROGUE":
 
@@ -3258,11 +3391,11 @@ def get_class():
         inventory.append("DAGGER X2")
         inventory.append("THIEVES' TOOLS")
 
-    if chosen_class == "SORCEROR":
+    if chosen_class == "SORCERER":
 
         sorc_origin = ["DRACONIC BLOODLINE", "WILD MAGIC", "STORM SORCERY"]
         chosen_origin = get_item(sorc_origin)
-        chosen_class = "SORCEROR ({0})".format(chosen_origin)
+        chosen_class = "SORCERER ({0})".format(chosen_origin)
         
         class_features.append(chosen_class)
         class_features.append("")
@@ -3324,7 +3457,7 @@ def get_class():
             
             class_features.append("DRACONIC BLOODLINE: {0}".format(char_bloodline))
             class_features.append("  : 2x Prof: CHA checks v. Dragons")
-            class_features.append("  : Gain +1 HP per Sorceror level")
+            class_features.append("  : Gain +1 HP per SORCERER level")
             class_features.append("  : Scales: Unarmored AC = 13 + DEX")
             class_features.append("")
 
@@ -3541,16 +3674,6 @@ def get_bg():
 
     if chosen_bg == "ACOLYTE":
         
-        bg_origins = [
-            "I found refuge in a temple after running away at an early age.",
-            "I was left at a temple by a family unable or unwilling to care for me.",
-            "I grew up in a household with strong religious convictions.",
-            "An impassioned sermon struck a chord deep in my soul and moved me to service",
-            "I followed friend / elder / loved one into religious service.",
-            "I was inspired after a personal encounter with a celestial being."
-            ]
-        chosen_bg_origin = get_item(bg_origins)
-
         bg_features.append(chosen_bg)
         bg_features.append("")
         bg_features.append("SHELTER OF THE FAITHFUL: Can perform religious ceremonies")
@@ -3571,6 +3694,14 @@ def get_bg():
         inventory.append("VESTMENTS / COMMON CLOTHES")
         inventory.append("BELT POUCH W/ 15g")
 
+        bg_origins = [
+            "I found refuge in a temple after running away at an early age.",
+            "I was left at a temple by a family unable or unwilling to care for me.",
+            "I grew up in a household with strong religious convictions.",
+            "An impassioned sermon struck a chord deep in my soul and moved me to service",
+            "I followed friend / elder / loved one into religious service.",
+            "I was inspired after a personal encounter with a celestial being."
+            ]
         bg_trait = [
                     "I idolize a particular hero and constantly refer to their deeds and example.",
                     "I find common ground between the fiercest enemies and always work towards peace.",
@@ -3606,6 +3737,7 @@ def get_bg():
                     "I become obsessed with a particular goal to the detriment of other needs."
                     ]
 
+        get_quirk("ORIGIN", bg_origins)
         get_quirk("TRAIT", bg_trait)
         get_quirk("IDEAL", bg_ideal)
         get_quirk("BOND", bg_bond)
@@ -4837,7 +4969,7 @@ print ("----------------------------")
 print ()
 #sleep(1)
 
-proficiencies = unique_everseen(proficiencies)
+# proficiencies = unique_everseen(proficiencies)
 proficiencies = sorted(proficiencies)   # Alphabetize list to sort by type
 for item in proficiencies:
     print (item)
