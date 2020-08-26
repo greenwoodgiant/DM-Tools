@@ -138,7 +138,7 @@ avail_feats = [
                 "WEAPON MASTER"
             ]
 
-#   List available things to gain proficiency with
+#   Available options to gain proficiency with
 tools = [
                 "ALCHEMIST'S SUPPLIES",
                 "BREWER'S SUPPLIES",
@@ -176,6 +176,10 @@ gaming_sets = [
                 "PLAYING CARDS",
                 "THREE-DRAGON ANTE"
         ]
+vehicles = [
+    "LAND",
+    "WATER"
+    ]
 languages = [
                 "DWARVEN",
                 "ELVEN",
@@ -192,9 +196,10 @@ languages = [
                 "INFERNAL",
                 "PRIMORDIAL",
                 "SYLVAN",
-                "UNDERCOMMON"
+                "UNDERCOMMON",
+                "LEONIN",
+                "MINOTAUR"
             ]
-
 simple_wpns = [
                 "CLUB",
                 "DAGGER",
@@ -244,15 +249,6 @@ saves = [
                 "INTELLIGENCE",
                 "WISDOM",
                 "CHARISMA"
-                ]   
-avail_profs = [
-                tools, 
-                instruments, 
-                gaming_sets, 
-                languages, 
-                simple_wpns, 
-                martial_wpns,
-                saves
                 ]
 
 #   Empty lists to add Profs, Race/Class/Background features and Inventory items to.
@@ -522,74 +518,83 @@ wiz_spell_1 = [
                 "EARTH TREMOR (XAN)"
                 ]
 
-#   Empty lists for Spellbooks (by Spell level)
+#   Empty lists to add spells to
 spellbook_0 = ["CANTRIPS:"]
 spellbook_1 = ["LEVEL 1 SPELLS:"]
 spellbook = [spellbook_0, spellbook_1]
 
-#   Return a random item from a group/list
+#   Return a random item from a list
 def get_item(group):
    item = (randint(1, (len(group))) - 1)
    return group[item]
+#   Ask the user to pick from a list of options
+def ask_input(group):
+    print()
+    for option in group:
+        print(option)
+    print()
+    
+    choice = input("Please select from above or type 'RANDOM': ")
 
-#   Gain proficiency in a random skill from a certain skill set
+    if choice == "RANDOM":
+        choice = get_item(group)
+        return choice
+    elif choice not in group:
+        print()
+        print("That is not an option. Please try again (case-sensitive)")
+        print()
+        choice = ask_input(group)
+    
+    return choice
+
+#   Adds proficiency bonus unless already proficient
+#   Will select another skill from full available list if so
 def get_skill(skill_set):
     
-    # Return a random item from the skill set
     chosen_skill = get_item(skill_set)
 
-    # If the character already has proficiency,
+    #   If the character already has proficiency, remove the skill
+    #   from the original skill set and the list of available skills
+    #   and pick a new skill from the available skills. Otherwise,
+    #   Add proficiency bonus to the skill modifier
     if skill_modifiers[(chosen_skill)] > 0:
-        # Find/Remove this skill in the list of available skills
-        for item in avail_skills:
-            if item == chosen_skill:
-                avail_skills.remove(item)
-        # Then start over with the list of available skills
+        skill_set.remove(chosen_skill)
+        if chosen_skill in avail_skills:
+            avail_skills.remove(chosen_skill)
         get_skill(avail_skills)
-
     else:
-        # Otherwise, add proficiency bonus to that skill's modifier
         skill_modifiers[(chosen_skill)] += 2
 
-    # Find/Remove this skill in the list of available skills
-    for item in avail_skills:
-        if item == chosen_skill:
-            avail_skills.remove(item)
+    #   Check for the skill in the original or available skill set and remove it. 
+    if chosen_skill in skill_set:
+        skill_set.remove(chosen_skill)
+    if chosen_skill in avail_skills:
+        avail_skills.remove(chosen_skill)
     
-    # Find/Remove this skill in the original skill set list
-    for item in skill_set:
-        if item == chosen_skill:
-            skill_set.remove(item)
-
-#   Gain expertise in a random skill from a certain skill set
-#   (Same as get_skill except will double proficiency if already proficient)
+    return chosen_skill
+#   Adds proficiency bonus even if already proficient
 def get_expertise(skill_set):
     
-    # Return a random skill from skill set
     chosen_skill = get_item(skill_set)
 
-    # For Thieves' Tools, update Proficiency list to reflect Expertise
+    #   For Thieves' Tools, update Proficiency list to reflect Expertise
+    #   Otherwise, add Proficiency (even if already added before) to bonus
+    #   and remove the item from original skill set and available skills
     if chosen_skill == "THIEVES' TOOLS":
         proficiencies.remove("Tools (THIEVES' TOOLS)")
         proficiencies.append("Tools (THIEVES' TOOLS) *EXPERTISE*")
     else:
-        # Otherwise, add proficiency bonus to skill modifier
         skill_modifiers[(chosen_skill)] += 2
 
-        # Find/Remove skill in list of available skills
-        for item in avail_skills:
-            if item == chosen_skill:
-                avail_skills.remove(item)
-
-        # Find/Remove skill in original skill set
-        for item in skill_set:
-            if item == chosen_skill:
-                skill_set.remove(item)
-
-#   Gain proficiency in a specific item from a group
-def get_proficiency(chosen_item, group=avail_profs):
+        if item in avail_skills:
+            avail_skills.remove(item)
+        if item in skill_set:
+            skill_set.remove(item)
     
-    # Return a random item if asked to "GET"
+    return chosen_skill
+
+def get_proficiency(chosen_item, group):
+    
     if chosen_item == "GET":
         chosen_item = get_item(group)
                 
@@ -609,11 +614,13 @@ def get_proficiency(chosen_item, group=avail_profs):
         chosen_item = "Languages ({0})".format(chosen_item)
     if group == simple_wpns or group == martial_wpns:
         chosen_item = "Weapons ({0})".format(chosen_item)
-    if group == saves:
-        chosen_item = "Saving Throws ({0})".format(chosen_item)
     if group == armor:
         chosen_item = "Armor ({0})".format(chosen_item)
-
+    if group == saves:
+        chosen_item = "Saving Throws ({0})".format(chosen_item)
+    if group == vehicles:
+        chosen_item = "Vehicles ({0})".format(chosen_item)
+    
     proficiencies.append(chosen_item)
    
     return (chosen_item)
@@ -642,7 +649,10 @@ def get_feat():
         
         return chosen_stat
     
-    chosen_feat = get_item(avail_feats)
+    if all_random == True:
+        chosen_feat = get_item(avail_feats)
+    else:
+        chosen_feat = ask_input(avail_feats)
 
     if chosen_feat == "ALERT":
 
@@ -1246,18 +1256,17 @@ def get_spell(name, from_list, to_spellbook):
     
         if name == "GET":
             name = get_item(from_list)
-        
         to_spellbook.append(name)
         from_list.remove(name)
-
         return name
 
 def roll_attribute():
 
     roll = [randint(1,6), randint(1,6), randint(1,6), randint(1,6)]
     roll = sorted(roll)                         
-
     score = roll[1] + roll[2] + roll[3]
+    while score < 8:
+        score = roll_attribute()
     return score
 
 def update_mods():
@@ -1276,10 +1285,20 @@ for score in ability_scores:
     ability_scores[score] = roll_attribute()
 
 #   These variables will affect hit point totals if set to True
-#   tough will be set to True if the feat "Tough" is chosen
-#   hill_dwarf will be set to True if that Dwarven Subrace is chosen
 tough = False
 hill_dwarf = False
+draconic_sorc = False
+
+all_random = input("Do you want a completely random character? (Y/N) : ")
+if all_random == "Y" or all_random == "y" or all_random == "YES" or all_random == "yes" or all_random == "Yes":
+    all_random = True
+else:
+    all_random = False
+print()
+
+#####                #####
+###        RACE        ###
+#####                #####
 
 race = [
         "HUMAN",
@@ -1306,7 +1325,11 @@ race = [
         "KOBOLD",
         "ORC",
         "YUAN-TI PUREBLOOD",
-        "GITH"
+        "GITH",
+        "CENTAUR",
+        "LEONIN",
+        "MINOTAUR",
+        "SATYR"
         ]
 def get_race():
 
@@ -1425,7 +1448,13 @@ def get_race():
 
         return char_mon_origin
 
-    chosen_race = get_item(race)
+    if all_random == True:
+        chosen_race = get_item(race)
+    else:
+        chosen_race = ask_input(race)
+    
+    if chosen_race == "RANDOM":
+        get_item(race)
     
     if chosen_race == "HUMAN":
 
@@ -1458,8 +1487,11 @@ def get_race():
 
     if chosen_race == "DWARF":
 
-        dw_subrace = ["HILL DWARF", "MOUNTAIN DWARF", "DUERGAR"]
-        chosen_race = get_item(dw_subrace)
+        subrace = ["HILL DWARF", "MOUNTAIN DWARF", "DUERGAR"]
+        if all_random == True:
+            chosen_race = get_item(subrace)
+        else:
+            chosen_race = ask_input(subrace)
         
         race_features.append(chosen_race)
         race_features.append("")
@@ -1527,8 +1559,12 @@ def get_race():
             get_proficiency("SHORT SWORD", martial_wpns)
             get_proficiency("SHORT BOW", simple_wpns)
 
-        elf_subrace = ["HIGH ELF", "WOOD ELF", "DROW"]
-        chosen_race = get_item(elf_subrace)
+        subrace = ["HIGH ELF", "WOOD ELF", "DROW"]
+        if all_random == True:
+            chosen_race = get_item(subrace)
+        else:
+            chosen_race = ask_input(subrace)
+        
         race_features.append(chosen_race)
         race_features.append("")
 
@@ -1613,8 +1649,12 @@ def get_race():
 
     if chosen_race == "HALFLING":
 
-        halfling_subrace = ["LIGHTFOOT HALFLING", "STOUT HALFLING"]
-        chosen_race = get_item(halfling_subrace)
+        subrace = ["LIGHTFOOT HALFLING", "STOUT HALFLING"]
+        if all_random == True:
+            chosen_race = get_item(subrace)
+        else:
+            chosen_race = ask_input(subrace)
+        
         race_features.append(chosen_race)
         race_features.append("")
 
@@ -1652,7 +1692,7 @@ def get_race():
 
     if chosen_race == "DRAGONBORN":
 
-        drac_ancestry = [
+        subrace = [
                         "BLACK",
                         "BLUE",
                         "BRASS",
@@ -1664,8 +1704,11 @@ def get_race():
                         "SILVER",
                         "WHITE"
                         ]
-        ancestry = get_item(drac_ancestry)
-        chosen_race = "{0} DRAGONBORN".format(ancestry)
+        if all_random == True:
+            subrace = get_item(subrace)
+        else:
+            subrace = ask_input(subrace)
+        chosen_race = "{0} DRAGONBORN".format(subrace)
         
         race_features.append(chosen_race)
         race_features.append("")
@@ -1722,15 +1765,19 @@ def get_race():
                         }
         
         race_features.append("BREATH WEAPON (1/LR): 2d6 dmg; DC {0} (8+CON+Prof) for 1/2".format(breath_save_DC))
-        race_features.append("BREATH WEAPON EFFECT: {0} {1} Damage ({2} Save)".format(breath_effect[ancestry], breath_damage[ancestry], breath_save[ancestry]))
+        race_features.append("BREATH WEAPON EFFECT: {0} {1} Damage ({2} Save)".format(breath_effect[subrace], breath_damage[subrace], breath_save[subrace]))
         race_features.append("")
-        race_features.append("RES: {0} Damage".format(breath_damage[ancestry]))
+        race_features.append("RES: {0} Damage".format(breath_damage[subrace]))
         race_features.append("")
         
     if chosen_race == "GNOME":
 
-        gnome_subrace = ["FOREST GNOME", "ROCK GNOME", "DEEP GNOME"]
-        chosen_race = get_item(gnome_subrace)
+        subrace = ["FOREST GNOME", "ROCK GNOME", "DEEP GNOME"]
+        if all_random == True:
+            chosen_race = get_item(subrace)
+        else:
+            chosen_race = ask_input(subrace)
+        
         race_features.append(chosen_race)
         race_features.append("")
 
@@ -1897,9 +1944,11 @@ def get_race():
 
     if chosen_race == "GENASI":
 
-        genasi_elements = ["FIRE", "EARTH", "WATER", "AIR"]
-        chosen_genasi = get_item(genasi_elements)
-        chosen_race = "{0} GENASI".format(chosen_genasi)
+        subrace = ["FIRE GENASI", "EARTH GENASI", "WATER GENASI", "AIR GENASI"]
+        if all_random == True:
+            chosen_race = get_item(subrace)
+        else:
+            chosen_race = ask_input(subrace)
         
         race_features.append(chosen_race)
         race_features.append("")
@@ -1991,8 +2040,12 @@ def get_race():
 
     if chosen_race == "AASIMAR":
 
-        aasm_subrace = ["PROTECTOR AASIMAR", "SCOURGE AASIMAR", "FALLEN AASIMAR"]
-        chosen_race = get_item(aasm_subrace)
+        subrace = ["PROTECTOR AASIMAR", "SCOURGE AASIMAR", "FALLEN AASIMAR"]
+        if all_random == True:
+            chosen_race = get_item(subrace)
+        else:
+            chosen_race = ask_input(subrace)
+
         race_features.append(chosen_race)
         race_features.append("")
         
@@ -2549,8 +2602,11 @@ def get_race():
             race_features.append(char_align)
             race_features.append("")
 
-        gith_subrace = ["GITHYANKI", "GITHZERAI"]
-        chosen_race = get_item(gith_subrace)
+        subrace = ["GITHYANKI", "GITHZERAI"]
+        if all_random == True:
+            chosen_race = get_item(subrace)
+        else:
+            chosen_race = ask_input(subrace)
 
         race_features.append(chosen_race)
         race_features.append("")
@@ -2593,12 +2649,115 @@ def get_race():
             
             race_features.append("ADV: Saves v. Charmed / Frightened condition")
 
-    return chosen_race
+    if chosen_race == "CENTAUR":
+        
+        ability_scores["STRENGTH"] += 2
+        ability_scores["WISDOM"] +=1
+        update_mods()
 
-print (get_race())
+        get_random_alignment()
+        get_age(15, 25, 45, 60)
+        get_size(10, 72, 24, 600)
+        get_speed(40)
+
+        race_features.append("Your creature type is Fey")
+        race_features.append("")
+        race_features.append("CHARGE: If you move at least 30ft straight towards a target")
+        race_features.append("      : and hit with melee weapon attack on that turn,")
+        race_features.append("      : you may make a Bonus action attack with your hooves")
+        race_features.append("HOOVES: Your hooves are natural weapons; 1d4+{0} (STR) bludgeoning damage".format(ability_modifiers["STRENGTH"]))
+        race_features.append("EQUINE: You count as one size larger for carrying capacity and push/pull/drag")
+        race_features.append("      : Climbing that requires hands and feet costs 4ft for every foot travelled")
+        race_features.append("")
+
+        centaur_skills = ["ANIMAL HANDLING", "NATURE", "MEDICINE", "SURVIVAL"]
+        get_proficiency("GET", centaur_skills)
+        get_proficiency("SYLVAN", languages)
+
+    if chosen_race == "LEONIN":
+
+        ability_scores["CONSTITUTION"] += 2
+        ability_scores["STRENGTH"] +=1
+        update_mods()
+
+        get_random_alignment()
+        get_age(15, 25, 45, 60)
+        get_size(20, 66, 12, 180)
+        get_speed(35)
+        get_darkvision(60)
+
+        race_features.append("Your creature type is Fey")
+        race_features.append("")
+        race_features.append(" ROAR: [Bonus] [1/LR] Creatures within 10ft that can hear you")
+        race_features.append("     : must succeed on WIS save DC {0} (8+Prof+CON)".format((10+ability_modifiers["CONSTITUTION"])))
+        race_features.append("     : or be frightened of you until the end of your next turn")
+        race_features.append("CLAWS: Your claws are natural weapons; 1d4+{0} (STR) slashing damage".format(ability_modifiers["STRENGTH"]))
+        race_features.append("")
+
+        leonin_skills = ["ATHLETICS", "INITIMIDATION", "PERCEPTION", "SURVIVAL"]
+        get_proficiency("GET", leonin_skills)
+        get_proficiency("LEONIN", languages)
+
+    if chosen_race == "MINOTAUR":
+
+        ability_scores["STRENGTH"] += 2
+        ability_scores["CONSTITUTION"] +=1
+        update_mods()
+
+        get_random_alignment()
+        get_age(15, 25, 45, 60)
+        get_size(16, 64, 12, 175)
+        get_speed(30)
+        
+        race_features.append(" RUSH: If you [Dash] and move at least 20ft")
+        race_features.append("     : you may make a [Bonus] attack with your horns")
+        race_features.append("HORNS: Your horn are natural weapons; 1d6+{0} (STR) piercing damage".format(ability_modifiers["STRENGTH"]))
+        race_features.append("SHOVE: Immediately after hitting a creature with your horns as an [Attack],")
+        race_features.append("     : you may use your [Bonus] to attempt to shove that target")
+        race_features.append("     : The creature must be within 5ft of you and up to 1 size larger")
+        race_features.append("     : Unless it succeeds on a STR Save DC {0} (8+Prof+STR),".format((10+ability_modifiers["STRENGTH"])))
+        race_features.append("     : it is shoved up to 10ft away from you")
+        race_features.append("")
+
+        minotaur_skills = ["INITIMIDATION", "PERSUASION"]
+        get_proficiency("GET", minotaur_skills)
+        get_proficiency("MINOTAUR", languages)
+
+    if chosen_race == "SATYR":
+
+        ability_scores["CHARISMA"] += 2
+        ability_scores["DEXTERITY"] +=1
+        update_mods()
+
+        get_random_alignment()
+        get_age(15, 25, 45, 60)
+        get_size(16, 56, 8, 100)
+        get_speed(35)
+        
+        race_features.append("Your creature type is Fey")
+        race_features.append("ADV: Saving throws v. Spells and other Magic effects")
+        race_features.append("")
+        race_features.append("HORNS: Your horns are natural weapons; 1d4+{0} (STR) bludgeoning damage".format(ability_modifiers["STRENGTH"]))
+        race_features.append("")
+        race_features.append("LEAP: Add 1d8 to the number of feet you cover with a long or high jump")
+        race_features.append("")
+
+        get_proficiency("PERFORMANCE", avail_skills)
+        get_proficiency("PERSUASION", avail_skills)
+        get_proficiency("GET", instruments)
+        get_proficiency("SYLVAN", languages)
+
+    print(chosen_race)
+    sleep(1)
+
+get_race()
 print ()
 
-update_mods()
+update_mods() # based on racial ability score changes
+
+#####                #####
+###        CLASS       ###
+#####                #####
 
 clss = [
         "BARBARIAN",
@@ -2625,6 +2784,9 @@ def get_class():
         
         if hill_dwarf == True:
             hit_points += 1
+        
+        if draconic_sorc == True:
+            hit_points += 1
 
         class_features.append("HIT DIE: 1d{0}".format(hit_die))
         class_features.append("HIT POINTS: {0}".format(hit_points))
@@ -2640,7 +2802,7 @@ def get_class():
         class_features.append("            : Spell Slots : Level 1 : {0}".format(spell_slots_1))
         class_features.append("")
 
-    def get_inventory(option_1, option_2):
+    def choose_inventory(option_1, option_2):
 
         item_options = []
         items_to_add = []
@@ -2674,14 +2836,14 @@ def get_class():
             items_to_add.append(get_item(martial_wpns))
             
         elif chosen_item == "SCALE/CHAIN":
-            get_inventory("SCALE MAIL", "CHAIN MAIL")
+            choose_inventory("SCALE MAIL", "CHAIN MAIL")
             
         elif chosen_item == "LEATHER/LONGBOW":
             items_to_add.append("LEATHER ARMOR")
             items_to_add.append("LONGBOW")
         
         elif chosen_item == "RAPIER/LONGSWORD":
-            get_inventory("RAPIER", "LONGSWORD")
+            choose_inventory("RAPIER", "LONGSWORD")
         
         elif chosen_item == "INSTRUMENT":
             items_to_add.append(get_item(instruments))
@@ -2690,6 +2852,10 @@ def get_class():
             items_to_add.append(chosen_item)
         
         for item in items_to_add:
+            inventory.append(item)
+
+    def add_inventory(inv_list):
+        for item in inv_list:
             inventory.append(item)
 
     if ability_scores["STRENGTH"] < 10 and ability_scores["DEXTERITY"] < 10:
@@ -2713,7 +2879,10 @@ def get_class():
         clss.remove("SORCERER")
         clss.remove("WARLOCK")
 
-    chosen_class = get_item(clss)
+    if all_random == True:
+            chosen_class = get_item(clss)
+    else:
+        chosen_class = ask_input(clss)
 
     if chosen_class == "BARBARIAN":
 
@@ -2748,10 +2917,9 @@ def get_class():
         for i in range(2):
             get_skill(barb_skills)
 
-        get_inventory("GREATAXE", "MARTIAL WEAPON")
-        get_inventory("HANDAXE (x2)", "SIMPLE WEAPON")
-        inventory.append("JAVELIN (x4)")
-        inventory.append("EXPLORER'S PACK")
+        choose_inventory("GREATAXE", "MARTIAL WEAPON")
+        choose_inventory("HANDAXE (x2)", "SIMPLE WEAPON")
+        add_inventory(["JAVELIN (x4)", "EXPLORER'S PACK"])
 
     if chosen_class == "BARD":
 
@@ -2799,11 +2967,10 @@ def get_class():
         for i in range(3):
             get_skill(bard_skills)
 
-        get_inventory("RAPIER/LONGSWORD", "SIMPLE WEAPON")
-        get_inventory("DIPLOMAT'S PACK", "ENTERTAINER'S PACK")
-        get_inventory("LUTE", "INSTRUMENT")
-        inventory.append("LEATHER ARMOR")
-        inventory.append("DAGGER")
+        choose_inventory("RAPIER/LONGSWORD", "SIMPLE WEAPON")
+        choose_inventory("DIPLOMAT'S PACK", "ENTERTAINER'S PACK")
+        choose_inventory("LUTE", "INSTRUMENT")
+        add_inventory(["LEATHER ARMOR", "DAGGER"])
         
         for i in range(2):
             get_spell("GET", bard_spell_0, spellbook_0)
@@ -2827,7 +2994,7 @@ def get_class():
         spellbook_1.remove("LEVEL 1 SPELLS:")
         spellbook_1.append("LEVEL 1 SPELLS PREPARED:")
 
-        cler_domain = [
+        domain = [
                     "KNOWLEDGE",
                     "LIFE",
                     "LIGHT",
@@ -2837,7 +3004,10 @@ def get_class():
                     "WAR",
                     "ARCANA"
                     ]
-        chosen_domain = get_item(cler_domain)
+        if all_random == True:
+            chosen_domain = get_item(domain)
+        else:
+            chosen_domain = ask_input(domain)
         chosen_class = "CLERIC, {0} DOMAIN".format(chosen_domain)
         
         class_features.append(chosen_class)
@@ -2875,11 +3045,10 @@ def get_class():
         for i in range(2):
             get_skill(cleric_skills)
 
-        get_inventory("MACE", "WARHAMMER")
-        get_inventory("LEATHER ARMOR", "SCALE/CHAIN")
-        get_inventory("LIGHT XBOW", "SIMPLE WEAPON")
-        inventory.append("SHIELD")
-        inventory.append("HOLY SYMBOL")
+        choose_inventory("MACE", "WARHAMMER")
+        choose_inventory("LEATHER ARMOR", "SCALE/CHAIN")
+        choose_inventory("LIGHT XBOW", "SIMPLE WEAPON")
+        add_inventory(["SHIELD", "HOLY SYMBOL"])
 
         for i in range(3):
             get_spell("GET", cleric_spell_0, spellbook_0)
@@ -2979,10 +3148,10 @@ def get_class():
             get_domain_spells("MAGIC MISSILE", "DETECT MAGIC")
             
             get_spell("GET", wiz_spell_0, spellbook_0)
-            domain_cantrip_1 = wiz_spell_0[(len(wiz_spell_0)-1)]
+            domain_cantrip_1 = spellbook_0[(len(spellbook_0)-1)]
             
             get_spell("GET", wiz_spell_0, spellbook_0)
-            domain_cantrip_2 = wiz_spell_0[(len(wiz_spell_0)-1)]
+            domain_cantrip_2 = spellbook_0[(len(spellbook_0)-1)]
 
             class_features.append("Gain Prof: INT(Arcana) Checks")
             class_features.append("")
@@ -3012,6 +3181,8 @@ def get_class():
         class_features.append("")
         class_features.append("DRUIDIC: Secret language of the Druids")
         class_features.append("")
+        class_features.append("A Druid will not wear armor or wield a shield made of metal")
+        class_features.append("")
             
         get_spell("GET", druid_spell_0, spellbook_0)    
         get_spell("GET", druid_spell_0, spellbook_0)    
@@ -3031,8 +3202,8 @@ def get_class():
         get_proficiency("SICKLE", simple_wpns)
         get_proficiency("SLING", simple_wpns)
         get_proficiency("SPEAR", simple_wpns)
-        get_proficiency("Armor (MEDIUM) (non-metal)")
-        get_proficiency("Armor (SHIELDS) (non-metal)")
+        get_proficiency("MEDIUM", armor)
+        get_proficiency("SHIELDS", armor)
         get_proficiency("INTELLIGENCE", saves)
         get_proficiency("WISDOM", saves)
 
@@ -3049,11 +3220,9 @@ def get_class():
         get_skill(druid_skills)
         get_skill(druid_skills)
 
-        get_inventory("WOODEN SHIELD", "SIMPLE WEAPON")
-        get_inventory("SCIMITAR", "SIMPLE MELEE")
-        inventory.append("LEATHER ARMOR")
-        inventory.append("EXPLORER'S PACK")
-        inventory.append("DRUIDIC FOCUS")
+        choose_inventory("WOODEN SHIELD", "SIMPLE WEAPON")
+        choose_inventory("SCIMITAR", "SIMPLE MELEE")
+        add_inventory(["LEATHER ARMOR", "EXPLORER'S PACK", "DRUIDIC FOCUS"])
 
     if chosen_class == "FIGHTER":
 
@@ -3065,15 +3234,17 @@ def get_class():
                     "SHIELD MASTER",
                     "DUAL-WIELDER",
                     ]
-        chosen_style = get_item(fighting_style)
-        chosen_class = "FIGHTER ({0})".format(chosen_style)
+        if all_random == True:
+            chosen_style = get_item(fighting_style)
+        else:
+            chosen_style = ask_input(fighting_style)
         
-        class_features.append(chosen_class)
+        class_features.append("FIGHTER ({0})".format(chosen_style))
         class_features.append("")
 
         get_hit_points(10)
 
-        get_proficiency("Armor (ALL)")
+        get_proficiency("ALL", armor)
         get_proficiency("SHIELDS", armor)
         get_proficiency("MARTIAL", martial_wpns)
         get_proficiency("STRENGTH", saves)
@@ -3092,10 +3263,10 @@ def get_class():
         get_skill(fighter_skills)
         get_skill(fighter_skills)
 
-        get_inventory("CHAIN MAIL", "LEATHER/LONGBOW")
-        get_inventory("MARTIAL & SHIELD", "TWO MARTIAL WEAPONS")
-        get_inventory("LIGHT XBOW", "TWO HANDAXES")
-        get_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
+        choose_inventory("CHAIN MAIL", "LEATHER/LONGBOW")
+        choose_inventory("MARTIAL & SHIELD", "TWO MARTIAL WEAPONS")
+        choose_inventory("LIGHT XBOW", "TWO HANDAXES")
+        choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
 
         class_features.append("SECOND WIND: (1/SR) Bonus Action to Heal 1d10 +Lvl HP")
         class_features.append("")
@@ -3121,8 +3292,7 @@ def get_class():
 
         get_hit_points(8)
 
-        unarmored_ac = ability_modifiers["DEXTERITY"] + ability_modifiers["WISDOM"] + 10
-        class_features.append("UNARMORED DEFENSE: AC = {0} (10+DEX+WIS)".format(unarmored_ac))
+        class_features.append("UNARMORED DEFENSE: AC = {0} (10+DEX+WIS)".format(10 + ability_modifiers["DEXTERITY"] + ability_modifiers["WISDOM"]))
         class_features.append("")
         class_features.append("MARTIAL ARTS: While unarmed or w/Monk weapons and unarmored")
         class_features.append("       : Use DEX instead of STR for Attack / Damage rolls")
@@ -3152,8 +3322,8 @@ def get_class():
         for i in range(2):
             get_skill(monk_skills)
 
-        get_inventory("SHORT SWORD", "SIMPLE WEAPON")
-        get_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
+        choose_inventory("SHORT SWORD", "SIMPLE WEAPON")
+        choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
         inventory.append("DARTS (x10)")
 
     if chosen_class == "PALADIN":
@@ -3162,20 +3332,18 @@ def get_class():
         class_features.append("")
 
         get_hit_points(10)
-
-        divsense_per_LR = (ability_modifiers["CHARISMA"] + 1)
         
         class_features.append("DIVINE SENSE: (Action): until next turn, w/in 60ft")
         class_features.append("    : Know location of celestial/fiend/undead")
         class_features.append("    : Know location of consecrated/desecrated grounds")
-        class_features.append("    : Uses per LR: {0}".format(divsense_per_LR))
+        class_features.append("    : Uses per LR: {0}".format(ability_modifiers["CHARISMA"] + 1))
         class_features.append("")
-        class_features.append("LAY ON HANDS: Pool of Healing Power = 5x Lvl")
+        class_features.append("LAY ON HANDS: Pool of Healing Power = 5 (5xLvl)")
         class_features.append("    : (Action): Restore up to max pool remaining HP")
-        class_features.append("    : (Action): Cure one disease or poison (per HP in pool)")
+        class_features.append("    : (Action): Cure one disease or poison (Per 5pts spent)")
         class_features.append("")
             
-        get_proficiency("Armor (ALL)")
+        get_proficiency("ALL", armor)
         get_proficiency("SHIELDS", armor)
         get_proficiency("MARTIAL", martial_wpns)
         get_proficiency("WISDOM", saves)
@@ -3189,14 +3357,13 @@ def get_class():
                     "PERSUASION",
                     "PERFORMANCE",
                 ]
-        get_skill(pal_skills)
-        get_skill(pal_skills)
-
-        get_inventory("MARTIAL/SHIELD", "TWO MARTIAL WEAPONS")
-        get_inventory("5X JAVELINS", "SIMPLE MELEE")
-        get_inventory("PRIEST'S PACK", "EXPLORER'S PACK")
-        inventory.append("CHAINMAIL")
-        inventory.append("HOLY SYMBOL")
+        for i in range(2):
+            get_skill(pal_skills)
+    
+        choose_inventory("MARTIAL/SHIELD", "TWO MARTIAL WEAPONS")
+        choose_inventory("5X JAVELINS", "SIMPLE MELEE")
+        choose_inventory("PRIEST'S PACK", "EXPLORER'S PACK")
+        add_inventory(["CHAINMAIL", "HOLY SYMBOL"])
 
     if chosen_class == "RANGER":
 
@@ -3217,7 +3384,10 @@ def get_class():
                         "UNDEAD"
                         ]
         chosen_enemies = []
-        chosen_enemy = get_item(favored_enemies)               
+        if all_random == True:
+            chosen_enemy = get_item(favored_enemies)
+        else:
+            chosen_enemy = ask_input(favored_enemies)               
                                                                
         if chosen_enemy == "HUMANOID":                         
             humanoids = [
@@ -3248,8 +3418,12 @@ def get_class():
                             "TIEFLING",
                             "TROGLODYTE",
                             ]
-            chosen_humanoid_1 = get_item(humanoids)               
-            chosen_humanoid_2 = get_item(humanoids)               
+            if all_random == True:
+                chosen_humanoid_1 = get_item(humanoids)               
+                chosen_humanoid_2 = get_item(humanoids)
+            else:
+                chosen_humanoid_1 = ask_input(humanoids)               
+                chosen_humanoid_2 = ask_input(humanoids)               
 
             chosen_enemies.append(chosen_humanoid_1)
             chosen_enemies.append(chosen_humanoid_2)
@@ -3266,7 +3440,10 @@ def get_class():
                         "SWAMP",
                         "UNDERDARK"
                         ]
-        chosen_terrain = get_item(favored_terrain)
+        if all_random == True:
+            chosen_terrain = get_item(favored_terrain)
+        else:
+            chosen_terrain = ask_input(favored_terrain)
 
         if len(chosen_enemies) > 1:
             chosen_class = "RANGER ({0} WALKER, {1}/{2} HUNTER)".format(chosen_terrain, chosen_humanoid_1, chosen_humanoid_2)
@@ -3278,39 +3455,39 @@ def get_class():
 
         for item in chosen_enemies:
             class_features.append("FAVORED ENEMY: {0}".format(item))
-        class_features.append("  : ADV: WIS(Survival) Checks to track enemy")
-        class_features.append("  : ADV: INT Checks to recall general information about enemy")
+        class_features.append("    : ADV: WIS(Survival) Checks to track enemy")
+        class_features.append("    : ADV: INT Checks to recall relevant general info")
         class_features.append("")
 
         # Gain Language Proficiency    
         for item in chosen_enemies:
-            if item == ("AASIMAR" or "CELESTIAL"):
+            if item == "AASIMAR" or item == "CELESTIAL":
                 get_proficiency("CELESTIAL", languages)
-            if item == ("DRAGON" or "KOBOLD" or "DRAGONBORN" or "LIZARDFOLK"):
+            if item == "DRAGON" or item == "KOBOLD" or item == "DRAGONBORN" or item == "LIZARDFOLK":
                 get_proficiency("DRACONIC", languages)
             if item == "DWARF":
                 get_proficiency("DWARVEN", languages)
             if item == "ELF":
                 get_proficiency("ELVEN", languages)
-            if item == ("GIANT" or "GOLIATH"):
+            if item == "GIANT" or item == "GOLIATH":
                 get_proficiency("GIANT", languages)
             if item == "GITH":
                 get_proficiency("GITH", languages)
             if item == "GNOLL":
                 get_proficiency("GNOLL", languages)
-            if item == ("GOBLIN" or "HOBGOBLIN" or "BUGBEAR"):
+            if item == "GOBLIN" or item == "HOBGOBLIN" or item == "BUGBEAR":
                 get_proficiency("GOBLIN", languages)
             if item == "DROW":
                 get_proficiency("UNDERCOMMON", languages)
-            if item == ("GENASI" or "ELEMENTAL" or "MERFOLK"):
+            if item == "GENASI" or item == "ELEMENTAL" or item == "MERFOLK":
                 get_proficiency("PRIMORDIAL", languages)
-            if item == ("ORC" or "HALF-ORC"):
+            if item == "ORC" or item == "HALF-ORC":
                 get_proficiency("ORC", languages)
             if item == "TROGLODYTE":
                 get_proficiency("TROGLODYTE", languages)
             if item == "FEY":
                 get_proficiency("SYLVAN", languages)
-            if item == ("FIEND" or "TIEFLING"):
+            if item == "FIEND" or item == "TIEFLING":
                 get_proficiency("INFERNAL", languages)
 
         get_hit_points(10)
@@ -3344,10 +3521,10 @@ def get_class():
         for i in range(2):
             get_skill(ranger_skills)
 
-        get_inventory("SCALE MAIL", "LEATHER ARMOR")
-        get_inventory("TWO SHORT SWORDS", "TWO SIMPLE MELEE")
-        get_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
-        get_inventory("LONGBOW", "MARTIAL WEAPON")
+        choose_inventory("SCALE MAIL", "LEATHER ARMOR")
+        choose_inventory("TWO SHORT SWORDS", "TWO SIMPLE MELEE")
+        choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
+        choose_inventory("LONGBOW", "MARTIAL WEAPON")
 
     if chosen_class == "ROGUE":
 
@@ -3400,23 +3577,21 @@ def get_class():
         for i in range(2):
             get_expertise(expertise_skills)
 
-        get_inventory("RAPIER", "SHORT SWORD")
-        get_inventory("SHORTBOW", "SHORT SWORD")
-        get_inventory("BURGLAR'S PACK", "DUNGEONEER'S PACK")
-        inventory.append("LEATHER ARMOR")
-        inventory.append("DAGGER X2")
-        inventory.append("THIEVES' TOOLS")
+        choose_inventory("RAPIER", "SHORT SWORD")
+        choose_inventory("SHORTBOW", "SHORT SWORD")
+        choose_inventory("BURGLAR'S PACK", "DUNGEONEER'S PACK")
+        add_inventory(["LEATHER ARMOR", "DAGGER X2", "THIEVES' TOOLS"])
 
     if chosen_class == "SORCERER":
 
-        sorc_origin = ["DRACONIC BLOODLINE", "WILD MAGIC", "STORM SORCERY"]
-        chosen_origin = get_item(sorc_origin)
-        chosen_class = "SORCERER ({0})".format(chosen_origin)
+        origin = ["DRACONIC BLOODLINE", "WILD MAGIC", "STORM SORCERY"]
+        if all_random == True:
+            chosen_origin = get_item(origin)
+        else:
+            chosen_origin = ask_input(origin) 
         
-        class_features.append(chosen_class)
+        class_features.append("SORCERER ({0})".format(chosen_origin))
         class_features.append("")
-
-        get_hit_points(6)
 
         get_spellcasting("CHARISMA", "2")
 
@@ -3438,22 +3613,20 @@ def get_class():
         for i in range(2):
             get_skill(sorc_skills)
 
-        get_inventory("LIGHT XBOW", "SIMPLE WEAPON")
-        get_inventory("COMPONENT POUCH", "ARCANE FOCUS")
-        get_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
+        choose_inventory("LIGHT XBOW", "SIMPLE WEAPON")
+        choose_inventory("COMPONENT POUCH", "ARCANE FOCUS")
+        choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
         inventory.append("DAGGER x2")
         
-        class_features.append("SORCEROUS ORIGIN: {0}".format(chosen_origin))
-        class_features.append("")
-        
-        get_spell("GET", sorc_spell_0, spellbook_0)
-        get_spell("GET", sorc_spell_0, spellbook_0)
-        get_spell("GET", sorc_spell_0, spellbook_0)
-        get_spell("GET", sorc_spell_0, spellbook_0)
-        get_spell("GET", sorc_spell_1, spellbook_1)
-        get_spell("GET", sorc_spell_1, spellbook_1)
+        for i in range(4):
+            get_spell("GET", sorc_spell_0, spellbook_0)
+        for i in range(2):
+            get_spell("GET", sorc_spell_1, spellbook_1)
 
         if chosen_origin == "DRACONIC BLOODLINE":
+
+            global draconic_sorc
+            draconic_sorc = True
 
             get_proficiency("DRACONIC", languages)
 
@@ -3469,12 +3642,11 @@ def get_class():
                         "SILVER DRAGON",
                         "WHITE DRAGON"
                         ]
-            char_bloodline = get_item(sorc_bloodline)
             
-            class_features.append("DRACONIC BLOODLINE: {0}".format(char_bloodline))
+            class_features.append("DRACONIC BLOODLINE: {0}".format(get_item(sorc_bloodline)))
             class_features.append("  : 2x Prof: CHA checks v. Dragons")
             class_features.append("  : Gain +1 HP per SORCERER level")
-            class_features.append("  : Scales: Unarmored AC = 13 + DEX")
+            class_features.append("  : Scales: Unarmored AC = {0} (13+DEX)".format(13 + ability_modifiers["DEXTERITY"]))
             class_features.append("")
 
         if chosen_origin == "WILD MAGIC":
@@ -3493,6 +3665,8 @@ def get_class():
             class_features.append("   : whirling gusts of air allow you to fly 10ft")
             class_features.append("   : without provoking attacks of opportunity")
             class_features.append("")
+        
+        get_hit_points(6)
 
     if chosen_class == "WARLOCK":
 
@@ -3504,25 +3678,18 @@ def get_class():
             class_features.append("EXPANDED SPELL LIST: {0}, {1}".format(spell_1, spell_2))
             class_features.append("")
 
-        patrons = [
-            "THE ARCHFEY", 
-            "THE FIEND", 
-            "THE GREAT OLD ONE", 
-            "THE UNDYING", 
-            "THE CELESTIAL"
-            ]
-        chosen_patron = get_item(patrons)
-        chosen_class = "WARLOCK OF {0}".format(chosen_patron)
+        patron = ["ARCHFEY", "FIEND", "GREAT OLD ONE", "UNDYING", "CELESTIAL"]
+        if all_random == True:
+            chosen_patron = get_item(patron)
+        else:
+            chosen_patron = ask_input(patron)
         
-        class_features.append(chosen_class)
+        class_features.append("WARLOCK OF THE {0}".format(chosen_patron))
         class_features.append("")
         
         get_hit_points(8)
 
         get_spellcasting("CHARISMA", "1")
-
-        class_features.append("OTHERWORLDLY PATRON: {0}".format(chosen_patron))
-        class_features.append("")
 
         for i in range(2):
             get_spell("GET", warlock_spell_0, spellbook_0)
@@ -3545,26 +3712,24 @@ def get_class():
         for i in range(2):
             get_skill(warlock_skills)
 
-        get_inventory("QUARTERSTAFF", "SIMPLE WEAPON")
-        get_inventory("LIGHT XBOW", "SIMPLE WEAPON")
-        get_inventory("COMPONENT POUCH", "ARCANE FOCUS")
-        get_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
-        inventory.append("LEATHER ARMOR")
-        inventory.append("DAGGER x2")
+        choose_inventory("QUARTERSTAFF", "SIMPLE WEAPON")
+        choose_inventory("LIGHT XBOW", "SIMPLE WEAPON")
+        choose_inventory("COMPONENT POUCH", "ARCANE FOCUS")
+        choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
+        add_inventory(["LEATHER ARMOR", "DAGGER x2"])
 
         if chosen_patron == "THE ARCHFEY":
 
             expand_spell_list("FAERIE FIRE", "SLEEP")
             
-            class_features.append("Action (1/SR): 10ft cube: WIS v. Charm/Frightened")       
+            class_features.append("Action (1/SR): 10ft cube: WIS DC {0} v. Charm/Frightened".format(spell_dc))       
             class_features.append("")
             
         if chosen_patron == "THE FIEND":
 
             expand_spell_list("BURNING HANDS", "COMMAND")
             
-            temp_hp = ability_modifiers["CHARISMA"] + 1
-            class_features.append("On dropping an enemy to 0 HP, Gain {0} Temp HP (CHA + Warlock Lvl)".format(temp_hp))
+            class_features.append("On dropping an enemy to 0 HP, Gain {0} Temp HP (CHA+Lvl)".format(ability_modifiers["CHARISMA"] + 1))
             class_features.append("")
             
         if chosen_patron == "THE GREAT OLD ONE":
@@ -3591,9 +3756,9 @@ def get_class():
             spellbook_0.append("SACRED FLAME")
             spellbook_0.append("LIGHT")
 
-            class_features.append("HEALING LIGHT: Pool of 1 + Warlock Lvl d6's")
+            class_features.append("HEALING LIGHT: Pool of 2d6 (1+Lvl)")
             class_features.append("  [B] Heal 1 creature w/in 60ft from pool,")
-            class_features.append("      CHA mod = max number of dice")
+            class_features.append("      Max {0}d6 per use (CHA)".format(ability_modifiers["CHARISMA"]))
             class_features.append("      Dice replenish after Long Rest")
             class_features.append("")
             
@@ -3607,7 +3772,7 @@ def get_class():
         get_spellcasting("INTELLIGENCE", "2")
         class_features.append("")
         
-        class_features.append("ARCANE RECOVERY (1/day): recover 1/2 Wiz Lvl in spell slots after SR")
+        class_features.append("ARCANE RECOVERY (1/LR): recover 1/2 Wiz Lvl in spell slots after SR")
         class_features.append("")
         
         # Gain 3 Wizard Cantrips    
@@ -3636,15 +3801,20 @@ def get_class():
         for i in range(2):
             get_skill(wiz_skills)
 
-        get_inventory("QUARTERSTAFF", "DAGGER")
-        get_inventory("COMPONENT POUCH", "ARCANE FOCUS")
-        get_inventory("SCHOLAR'S PACK", "EXPLORER'S PACK")
+        choose_inventory("QUARTERSTAFF", "DAGGER")
+        choose_inventory("COMPONENT POUCH", "ARCANE FOCUS")
+        choose_inventory("SCHOLAR'S PACK", "EXPLORER'S PACK")
         inventory.append("SPELLBOOK")
     
-    return chosen_class
+    print(chosen_class)
+    sleep(1)
 
-print (get_class())
+get_class()
 print ()
+
+#####                #####
+###     BACKGROUND     ###
+#####                #####
 
 backgrounds = [
         "ACOLYTE",
@@ -3664,7 +3834,6 @@ backgrounds = [
 def get_bg():
 
     def get_quirk(qtype, qlist):
-
         roll_quirk = randint(1,len(qlist))
         new_quirk = qlist[(roll_quirk - 1)]
         bg_features.append("{0} : {1}".format(qtype, new_quirk))
@@ -3675,19 +3844,25 @@ def get_bg():
         get_quirk(" BOND", bg_bond)
         get_quirk(" FLAW", bg_flaw)
 
-    def background_skills(skill1, skill2):
+    def bg_skills(skill1, skill2):
     
         if skill_modifiers[(skill1)] == 0:
             skill_modifiers[(skill1)] += 2
         else:
-            get_skill(avail_skills)
+            skill1 = get_skill(avail_skills)
 
         if skill_modifiers[(skill2)] == 0:
             skill_modifiers[(skill2)] += 2
         else:
-            get_skill(avail_skills)
+            skill2 = get_skill(avail_skills)
+        
+        bg_features.append("SKILL PROFICIENCIES: {0} / {1}".format(skill1, skill2))
+        bg_features.append("")
 
-    chosen_bg = get_item(backgrounds)
+    if all_random == True:
+            chosen_bg = get_item(backgrounds)
+    else:
+        chosen_bg = ask_input(backgrounds)
 
     if chosen_bg == "ACOLYTE":
         
@@ -3700,16 +3875,20 @@ def get_bg():
         bg_features.append("    : Residence at home temple, can request assistance")
         bg_features.append("")
         
-        background_skills("DECEPTION", "PERFORMANCE")
+        bg_skills("DECEPTION", "PERFORMANCE")
 
         for i in range(2):
             get_proficiency("GET", languages)
 
-        inventory.append("HOLY SYMBOL")
-        inventory.append("PRAYER BOOK/WHEEL")
-        inventory.append("STICKS OF INCENSE")
-        inventory.append("VESTMENTS / COMMON CLOTHES")
-        inventory.append("BELT POUCH W/ 15g")
+        acolyte_inventory = [
+                            "HOLY SYMBOL",
+                            "PRAYER BOOK/WHEEL",
+                            "STICKS OF INCENSE",
+                            "VESTMENTS / COMMON CLOTHES",
+                            "BELT POUCH W/ 15g"
+                            ]
+        for item in acolyte_inventory:
+            inventory.append(item)
 
         bg_origins = [
             "I found refuge in a temple after running away at an early age.",
@@ -3767,24 +3946,26 @@ def get_bg():
                 "PICKPOCKET",
                 "FENCER"
                 ]
-        chosen_specialty = get_item(specialty_scheme)
-        chosen_bg = "CHARLATAN ({0})".format(chosen_specialty)
-
-        bg_features.append(chosen_bg)
+        
+        bg_features.append("CHARLATAN ({0})".format(get_item(specialty_scheme)))
         bg_features.append("")
         bg_features.append("FALSE IDENTITY: Disguise / Docs / Established Acquaintances")
         bg_features.append("    : Can forge official document if you've seen a real one")
         bg_features.append("")
         
-        background_skills("DECEPTION", "SLEIGHT OF HAND")
+        bg_skills("DECEPTION", "SLEIGHT OF HAND")
 
         get_proficiency("DIGUISE KIT", tools)
         get_proficiency("FORGERY KIT", tools)
 
-        inventory.append("FINE CLOTHES")
-        inventory.append("DISGUISE KIT")
-        inventory.append("SPECIALTY TOOLS")
-        inventory.append("BELT POUCH W/ 15g")
+        charlatan_inventory = [
+                            "FINE CLOTHES",
+                            "DISGUISE KIT",
+                            "SPECIALTY TOOLS",
+                            "BELT POUCH W/ 15g"
+                            ]
+        for item in charlatan_inventory:
+            inventory.append(item)
 
         bg_trait = [
                         "I fall in and out of love easily, and I'm always pursuing someone.",
@@ -3835,23 +4016,25 @@ def get_bg():
                     "PICKPOCKET",
                     "SMUGGLER"
                     ]
-        chosen_specialty = get_item(crime_specialties)
-        chosen_bg = "CRIMINAL ({0})".format(chosen_specialty)
         
-        bg_features.append(chosen_bg)
+        bg_features.append("CRIMINAL ({0})".format(get_item(crime_specialties)))
         bg_features.append("")
         bg_features.append("CRIMINAL CONTACT: Liaison to criminal network, always accessible")
         bg_features.append("      : Can always locate the black market contacts in town")
         bg_features.append("")
 
-        background_skills("DECEPTION", "STEALTH")
+        bg_skills("DECEPTION", "STEALTH")
 
         get_proficiency("GET", gaming_sets)
         get_proficiency("THIEVES' TOOLS", tools)
 
-        inventory.append("Dark Hooded Common Clothes")
-        inventory.append("Crowbar")
-        inventory.append("Belt pouch with 15g")
+        criminal_inventory = [
+                        "DARK HOODED COMMON CLOTHES",
+                        "CROWBAR", 
+                        "BELT POUCH W/ 15g"
+                        ]
+        for item in criminal_inventory:
+            inventory.append(item)
 
         bg_trait = [
                         "I always have a plan when things go wrong.",
@@ -3904,24 +4087,26 @@ def get_bg():
                     "STORYTELLER",
                     "TUMBLER"
                     ]
-        chosen_routine = get_item(ent_routines)
-        chosen_bg = "ENTERTAINER ({0})".format(chosen_routine)
         
-        bg_features.append(chosen_bg)
+        bg_features.append("ENTERTAINER ({0})".format(get_item(ent_routines)))
         bg_features.append("")
         bg_features.append("BY POPULAR DEMAND: Can perform to receive free lodging")
         bg_features.append("    : Strangers often recognize you and treat you well")
         bg_features.append("")
 
-        background_skills("ACROBATICS", "PERFORMANCE")
+        bg_skills("ACROBATICS", "PERFORMANCE")
 
         get_proficiency("GET", instruments)
         get_proficiency("DISGUISE KIT", tools)
 
-        inventory.append("The favor of an admirer")
-        inventory.append("Costume")
-        inventory.append("Belt pouch with 15g")
-
+        ent_inventory = [
+                        "ADMIRER'S FAVOR",
+                        "COSTUME", 
+                        "BELT POUCH W/ 15g"
+                        ]
+        for item in ent_inventory:
+            inventory.append(item)
+        
         bg_trait = [
                     "I know a good story for any situation.",
                     "I collect local rumors and gossip wherever I go.",
@@ -3969,20 +4154,18 @@ def get_bg():
                 "WAR HERO",
                 "SUPERNATURAL ORIGIN",
                 ]
-        chosen_event = get_item(defining_events)
-        chosen_bg = "FOLK HERO ({0})".format(chosen_event)
         
-        bg_features.append(chosen_bg)
+        bg_features.append("FOLK HERO ({0})".format(get_item(defining_events)))
         bg_features.append("")
         bg_features.append("RUSTIC HOSPITALITY: Find a place to stay with commoners.")
         bg_features.append("                  : They will shield you from the law,")
         bg_features.append("                  : But will not risk their lives for you")
         bg_features.append("")
 
-        background_skills("ANIMAL HANDLING", "SURVIVAL")
+        bg_skills("ANIMAL HANDLING", "SURVIVAL")
 
         get_proficiency("GET", tools)
-        get_proficiency("Vehicles (LAND)")
+        get_proficiency("LAND", vehicles)
 
         inventory.append("Shovel")
         inventory.append("Iron Pot")
@@ -4051,9 +4234,8 @@ def get_bg():
                 "WOODCARVERS, COOPERS, & BOWYERS"
                 ]
         chosen_biz = get_item(guild_biz)
-        chosen_bg = "GUILD ARTISAN ({0})".format(chosen_biz)
-
-        bg_features.append(chosen_bg)
+        
+        bg_features.append("GUILD ARTISAN ({0})".format(chosen_biz))
         bg_features.append("")
         bg_features.append("GUILD MEMBERSHIP: Find a place to stay / eat with guild members")
         bg_features.append("     : Centralized place in cities to meet other guild members.")
@@ -4061,7 +4243,7 @@ def get_bg():
         bg_features.append("     : Access to political figures, legal defense")
         bg_features.append("")
         
-        background_skills("INSIGHT", "PERSUASION")
+        bg_skills("INSIGHT", "PERSUASION")
 
         biz_toolkits = {
             "ALCHEMISTS & APOTHECARIES" : "ALCHEMIST'S SUPPLIES",
@@ -4139,10 +4321,8 @@ def get_bg():
                     "RELIC PROTECTOR",
                     "SITE EXPLORER"
                     ]
-        chosen_life = get_item(life_of_seclusion)
-        chosen_bg = "HERMIT ({0})".format(chosen_life)
-
-        bg_features.append(chosen_bg)
+        
+        bg_features.append("HERMIT ({0})".format(get_item(life_of_seclusion)))
         bg_features.append("")
         bg_features.append("DISCOVERY: Gain access to a unique and powerful discovery.")
         bg_features.append("         : It could be a great truth about the cosmos,")
@@ -4150,7 +4330,7 @@ def get_bg():
         bg_features.append("         : DM will help determine something relevant to campaign.")
         bg_features.append("")
         
-        background_skills("MEDICINE", "PERSUASION")
+        bg_skills("MEDICINE", "PERSUASION")
 
         get_proficiency("GET", languages)
         get_proficiency("HERBALISM KIT", tools)
@@ -4208,7 +4388,7 @@ def get_bg():
         bg_features.append("       : You can secure audience with another local noble.")
         bg_features.append("")
         
-        background_skills("HISTORY", "PERSUASION")
+        bg_skills("HISTORY", "PERSUASION")
 
         get_proficiency("GET", gaming_sets)
         get_proficiency("GET", languages)
@@ -4269,17 +4449,15 @@ def get_bg():
                     "HUNTER-GATHERER",
                     "TRIBAL MARAUDER"
                     ]
-        char_origin = get_item(outlander_origin)
-        chosen_bg = "OUTLANDER ({0})".format(char_origin)
-
-        bg_features.append(chosen_bg)
+        
+        bg_features.append("OUTLANDER ({0})".format(get_item(outlander_origin)))
         bg_features.append("")
         bg_features.append("WANDERER: Excellent memory for geography and maps,")
         bg_features.append("    : Recall the general layout of terrain / settlements")
         bg_features.append("    : Find food / fresh water for 5 people /day")
         bg_features.append("")
         
-        background_skills("ATHLETICS", "SURVIVAL")
+        bg_skills("ATHLETICS", "SURVIVAL")
 
         get_proficiency("GET", instruments)
         get_proficiency("GET", languages)
@@ -4339,16 +4517,14 @@ def get_bg():
                     "WIZARD'S APPRENTICE",
                     "SCRIBE",
                     ]
-        chosen_specialty = get_item(sage_specialty)
-        chosen_bg = "SAGE ({0})".format(chosen_specialty)
-
-        bg_features.append(chosen_bg)
+        
+        bg_features.append("SAGE ({0})".format(get_item(sage_specialty)))
         bg_features.append("")
         bg_features.append("RESEARCHER: If you don't know something, you know where to find it.")
         bg_features.append("          : DM will determine what you have to do to get there")
         bg_features.append("")
 
-        background_skills("ARCANA", "HISTORY")
+        bg_skills("ARCANA", "HISTORY")
 
         for i in range(2):
             get_proficiency("GET", languages)
@@ -4405,10 +4581,10 @@ def get_bg():
         bg_features.append("              : Expected to assist the crew during journey")
         bg_features.append("")
         
-        background_skills("ATHLETICS", "PERCEPTION")
+        bg_skills("ATHLETICS", "PERCEPTION")
 
         get_proficiency("NAVIGATOR'S TOOLS", tools)
-        get_proficiency("Vehicles (WATER)")
+        get_proficiency("WATER", vehicles)
 
         inventory.append("BELAYING PIN (CLUB)")
         inventory.append("SILK ROPE (50ft)")
@@ -4465,20 +4641,17 @@ def get_bg():
                     "STANDARD-BEARER",
                     "SUPPORT STAFF",
                     ]
-        chosen_rank = get_item(soldier_rank)
-        chosen_bg = "SOLDIER ({0})".format(chosen_rank)
-
-        bg_features.append(chosen_bg)
+        
+        bg_features.append("SOLDIER ({0})".format(get_item(soldier_rank)))
         bg_features.append("")
         bg_features.append("MILITARY RANK: Fellow soldiers recognize your authority/influence")
         bg_features.append("             : Gain access to friendly military encampments/fortresses")
         bg_features.append("")
 
-        background_skills("ATHLETICS", "INTIMIDATION")
+        bg_skills("ATHLETICS", "INTIMIDATION")
 
         get_proficiency("GET", gaming_sets)
-
-        get_proficiency("Vehicles (LAND)")
+        get_proficiency("LAND", vehicles)
 
         inventory.append("Insignia of Rank")
         inventory.append("Trophy from a Fallen Enemy")
@@ -4530,7 +4703,7 @@ def get_bg():
         bg_features.append("       : Travel 2x as fast through city outside combat")
         bg_features.append("")
         
-        background_skills("SLEIGHT OF HAND", "STEALTH")
+        bg_skills("SLEIGHT OF HAND", "STEALTH")
 
         get_proficiency("DISGUISE KIT", tools)
         get_proficiency("THIEVES' TOOLS", tools)
@@ -4579,10 +4752,15 @@ def get_bg():
 
         get_quirks()
 
-    return chosen_bg
+    print(chosen_bg)
+    sleep(1)
  
-print (get_bg())
+get_bg()
 print ()
+
+#####                #####
+###       STORY        ###
+#####                #####
 
 char_history = []
 def get_story():
@@ -4844,16 +5022,16 @@ def get_story():
 
 get_story()
     
-###
-#       FINAL FEATURE LISTS / CHARACTER SHEET
-###
+#####                #####
+###     CHAR SHEET     ###
+#####                #####
 
-#sleep(1)
+sleep(1)
 print ("----------------------------")
 print ("ATTRIBUTES / MODIFIERS: ")
 print ("----------------------------")
 print ()
-#sleep(1)
+sleep(1)
 
 for item in ability_scores:
     if ability_modifiers[(item)] > 0:
@@ -4861,99 +5039,102 @@ for item in ability_scores:
     else:
         print ("{0}: {1} (Mod: {2})".format(item, ability_scores[item], ability_modifiers[item]))
     print ()
-    ##sleep(1)
+sleep(3)
 
 print ("----------------------------")
 print ("SKILL CHECK BONUS: ")
 print ("----------------------------")
 print ()
-#sleep(1)
+sleep(1)
 
 for skill in skill_modifiers:
+    
+    #   Add the relevant ability modifier
     skill_modifiers[skill] += ability_modifiers[skill_to_ability[skill]]
-
+    
+    #   If the modifer is not a straight roll, print the bonus
     if skill_modifiers[skill] != 0:                               
         if skill_modifiers[skill] > 0:                                     
             print ("{0}: +{1}".format(skill, skill_modifiers[(skill)]))     
         else:
             print ("{0}: {1}".format(skill, skill_modifiers[(skill)]))
-        #sleep(1)
+sleep(3)
 
 print ()
 print ("----------------------------")
 print ("RACIAL FEATURES:")
 print ("----------------------------")
 print ()
-#sleep(1)
+sleep(1)
 
 for item in race_features:
     print (item)
-    ##sleep(1)
+sleep(3)
 
 print ()
 print ("----------------------------")
 print ("CLASS FEATURES:")
 print ("----------------------------")
 print ()
-#sleep(1)
+sleep(1)
 
 for item in class_features:
     print (item)
-    #sleep(1)
+sleep(3)
 
 print ()
 print ("----------------------------")
 print ("BACKGROUND FEATURES:")
 print ("----------------------------")
 print ()
-#sleep(1)
+sleep(1)
 
 for item in bg_features:
     print (item)
-    #sleep(1)
+sleep(3)
 
 print ()
 print ("----------------------------")
 print ("CHARACTER HISTORY:")
 print ("----------------------------")
 print ()
-#sleep(1)
+sleep(1)
 
 for item in char_history:
     print (item)
-    #sleep(1)
+sleep(3)
 
 print ()
 print ("----------------------------")
 print ("PROFICIENCIES: ")
 print ("----------------------------")
 print ()
-#sleep(1)
+sleep(1)
 
 # proficiencies = unique_everseen(proficiencies)
 proficiencies = sorted(proficiencies)   # Alphabetize list to sort by type
 for item in proficiencies:
     print (item)
-    #sleep(1)
+sleep(3)
 
 print ()
 print ("----------------------------")
 print ("INVENTORY:")
 print ("----------------------------")
 print ()
-#sleep(1)
+sleep(1)
 
 for item in inventory:
     print (item)
-    #sleep(1)
-print ()
+sleep(3)
 
-if len(spellbook_0) > 2 or len(spellbook_1) > 2:  # Only print Spellbook for Spellcasters
+if len(spellbook_0) > 1 or len(spellbook_1) > 1:  # Only print Spellbook for Spellcasters
+    print ()
     print ("----------------------------")          
     print ("SPELLBOOK:")                            
     print ("----------------------------")
     print ()
-    #sleep(1)
+    sleep(1)
 
     for book in spellbook:
         for item in book:
