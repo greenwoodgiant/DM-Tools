@@ -696,6 +696,10 @@ def get_proficiency(item, group):
     proficiencies.append(item)
    
     return (item)
+def get_proficiencies(items, group):
+    for item in items:
+        get_proficiency(item, group)
+
 #   Adds feat to racial features
 def get_feat():
 
@@ -2681,6 +2685,20 @@ def get_class():
         for item in inv_list:
             inventory.append(item)
 
+    def get_class_skills(number):
+        for skill in class_skills:
+            if skill_modifiers[skill] > 0:
+                class_skills.remove(skill)
+        for i in range(number):
+            get_skill("ANY", class_skills)
+    
+    def get_spells(class_list, number):
+        for i in number:
+            if class_list in cantrips:
+                get_spell("ANY",class_list,spellbook_0)
+            else:
+                get_spell("ANY",class_list,spellbook_1)
+
     chosen_class = ask_input(clss)
 
     if chosen_class == "BARBARIAN":
@@ -2690,32 +2708,21 @@ def get_class():
 
         get_hit_points(12)
         
-        unarmored_ac = ability_modifiers["DEXTERITY"] + ability_modifiers["CONSTITUTION"] + 10
+        get_proficiencies(["STRENGTH", "CONSTITUTION"], saves)
+        get_proficiencies(["LIGHT","MEDIUM","SHIELDS"], armor)
+        get_proficiencies(["SIMPLE","MARTIAL"], martial_wpns)
+        
+        class_skills = ["ANIMAL HANDLING","ATHLETICS","INTIMIDATION","NATURE","PERCEPTION","SURVIVAL"]
+        get_class_skills(2)
+        
         class_features.append("RAGE: ADV: Strength Checks and Saving Throws")
-        class_features.append("    : (2/day, bonus action, no Heavy Armor)")
+        class_features.append("    : (2/LR, bonus action, no Heavy Armor)")
         class_features.append("    : +2 Damage with melee weapons")
         class_features.append("    : RES: Bludgeoning / Piercing / Slashing damage")
         class_features.append("")
-        class_features.append("UNARMORED DEFENSE: AC = {0} (10+DEX+CON)".format(unarmored_ac))
+        class_features.append("UNARMORED DEFENSE: AC = {0} (10+DEX+CON)".format(ability_modifiers["DEXTERITY"] + ability_modifiers["CONSTITUTION"] + 10))
         class_features.append("")
         
-        get_proficiency("MEDIUM", armor)
-        get_proficiency("SHIELDS", armor)
-        get_proficiency("MARTIAL", martial_wpns)
-        get_proficiency("STRENGTH", saves)
-        get_proficiency("CONSTITUTION", saves)
-        
-        barb_skills = [
-                    "ANIMAL HANDLING",
-                    "ATHLETICS",
-                    "INTIMIDATION",
-                    "NATURE",
-                    "PERCEPTION",
-                    "SURVIVAL"
-                    ]
-        for i in range(2):
-            get_skill("ANY", barb_skills)
-
         choose_inventory("GREATAXE", "MARTIAL WEAPON")
         choose_inventory("HANDAXE (x2)", "SIMPLE WEAPON")
         add_inventory(["JAVELIN (x4)", "EXPLORER'S PACK"])
@@ -2726,24 +2733,11 @@ def get_class():
         class_features.append("")
         
         get_hit_points(8)
-
-        class_features.append("BARDIC INSPIRATION (Bonus Action):")
-        class_features.append("         : Creature w/in 60ft that can hear you:")
-        class_features.append("         : Gains 1d6 to use w/in 10 min on Attack / Ability / Save")
-        class_features.append("")
-
-        get_spellcasting("CHARISMA", "4")
-
+        get_proficiencies(["DEXTERITY", "CHARISMA"], saves)
+        get_proficiencies(["SIMPLE","LONGSWORD","SHORT SWORD","RAPIER","HAND XBOW"], martial_wpns)
         get_proficiency("LIGHT", armor)
-        get_proficiency("DEXTERITY", saves)
-        get_proficiency("CHARISMA", saves)
-        get_proficiency("SIMPLE", simple_wpns)
-        get_proficiency("LONGSWORD", martial_wpns)
-        get_proficiency("SHORT SWORD", martial_wpns)
-        get_proficiency("RAPIER", martial_wpns)
-        get_proficiency("HAND XBOW", martial_wpns)
         
-        bard_skills = [
+        class_skills = [
                     "ATHLETICS",
                     "ACROBATICS",
                     "SLEIGHT OF HAND",
@@ -2763,55 +2757,55 @@ def get_class():
                     "PERFORMANCE",
                     "PERSUASION"
                     ]
-        for i in range(3):
-            get_skill("ANY", bard_skills)
+        get_class_skills(3)
+
+        get_spellcasting("CHARISMA", "4")
+        get_spells(bard_spell_0, 2)
+        get_spells(bard_spell_1, 4)
+        
+        class_features.append("BARDIC INSPIRATION (Bonus Action):")
+        class_features.append("         : Creature w/in 60ft that can hear you:")
+        class_features.append("         : Gains 1d6 to use w/in 10 min on Attack / Ability / Save")
+        class_features.append("")
 
         choose_inventory("RAPIER/LONGSWORD", "SIMPLE WEAPON")
         choose_inventory("DIPLOMAT'S PACK", "ENTERTAINER'S PACK")
         choose_inventory("LUTE", "INSTRUMENT")
         add_inventory(["LEATHER ARMOR", "DAGGER"])
         
-        for i in range(2):
-            get_spell("ANY", bard_spell_0, spellbook_0)
-        for i in range(4):
-            get_spell("ANY", bard_spell_1, spellbook_1)
-
     if chosen_class == "CLERIC":
 
         def get_domain_spells(spell_1, spell_2):
 
-            domain_spells = "DOMAIN SPELLS (always prepared): {0} / {1}".format(spell_1, spell_2)
-            class_features.append(domain_spells)
+            class_features.append("DOMAIN SPELLS (always prepared): {0} / {1}".format(spell_1, spell_2))
             class_features.append("")
 
-            spell_1 = "(Domain) {0}".format(spell_1)
-            spell_2 = "(Domain) {0}".format(spell_2)
-            
-            spellbook_1.append(spell_1)
-            spellbook_1.append(spell_2)
+            for spell in [spell_1,spell_2]:
+                cleric_spell_1.remove(spell)
+                spell = "(Domain) {0}".format(spell)
+                spellbook_1.append(spell)
 
         spellbook_1.remove("LEVEL 1 SPELLS:")
         spellbook_1.append("LEVEL 1 SPELLS PREPARED:")
 
-        domain = [
-                    "KNOWLEDGE",
-                    "LIFE",
-                    "LIGHT",
-                    "NATURE",
-                    "TEMPEST",
-                    "TRICKERY",
-                    "WAR",
-                    "ARCANA"
-                    ]
-        chosen_domain = ask_input(domain)
-        chosen_class = "CLERIC, {0} DOMAIN".format(chosen_domain)
+        domains = ["KNOWLEDGE","LIFE","LIGHT","NATURE","TEMPEST","TRICKERY","WAR","ARCANA"]
+        domain = ask_input(domains)
         
-        class_features.append(chosen_class)
+        class_features.append("CLERIC, {0} DOMAIN".format(domain))
         class_features.append("")
         
         get_hit_points(8)
-
+        get_proficiencies(["WISDOM", "CHARISMA"], saves)
+        get_proficiencies(["MEDIUM","SHIELDS"], armor)
+        get_proficiency("SIMPLE", simple_wpns)
+        
+        class_skills = ["HISTORY","DECEPTION","MEDICINE","PERSUASION","PERFORMANCE"]
+        get_class_skills(2)
+        
         get_spellcasting("WISDOM", "2")
+        class_features.append("      : After LR, Prepare up to {0} spells from Cleric list".format(spells_prepared))
+        class_features.append("      : Preparing takes at least 1 min per spell in meditation")
+        class_features.append("")
  
         spells_prepared = ability_modifiers[("WISDOM")] + 1
         if spells_prepared < 1:
@@ -2820,95 +2814,44 @@ def get_class():
         domain_per_LR = ability_modifiers[("WISDOM")]
         if domain_per_LR < 1:
             domain_per_LR = 1
- 
-        class_features.append("      : After LR, Prepare up to {0} spells from Cleric list".format(spells_prepared))
-        class_features.append("      : Preparing takes at least 1 min per spell in meditation")
-        class_features.append("")
 
-        get_proficiency("SIMPLE", simple_wpns)
-        get_proficiency("MEDIUM", armor)
-        get_proficiency("SHIELDS", armor)
-        get_proficiency("WISDOM", saves)
-        get_proficiency("CHARISMA", saves)
-
-        cleric_skills = [
-                        "HISTORY",
-                        "DECEPTION",
-                        "MEDICINE",
-                        "PERSUASION",
-                        "PERFORMANCE"
-                        ]
-        for i in range(2):
-            get_skill("ANY", cleric_skills)
-
-        choose_inventory("MACE", "WARHAMMER")
-        choose_inventory("LEATHER ARMOR", "SCALE/CHAIN")
-        choose_inventory("LIGHT XBOW", "SIMPLE WEAPON")
-        add_inventory(["SHIELD", "HOLY SYMBOL"])
-
-        for i in range(3):
-            get_spell("ANY", cleric_spell_0, spellbook_0)
-
-        for i in range(spells_prepared):
-            get_spell("ANY", cleric_spell_1, spellbook_1)
-        
-
-        if chosen_domain == "KNOWLEDGE":
+        if domain == "KNOWLEDGE":
 
             get_domain_spells("COMMAND", "IDENTIFY")
-
-            get_proficiency("ANY", languages)
-            get_proficiency("ANY", languages)
-
-            domain_skills = [
-                        "HISTORY",
-                        "ARCANA",
-                        "NATURE",
-                        "PERFORMANCE"
-                        ]
-            get_expertise(domain_skills)
-            get_expertise(domain_skills)
-
-        if chosen_domain == "LIFE":
+            get_proficiencies(["ANY", "ANY"], languages)
+            class_skills = ["HISTORY","ARCANA","NATURE","PERFORMANCE"]
+            get_class_skills(2)
+            
+        if domain == "LIFE":
 
             get_domain_spells("BLESS", "CURE WOUNDS")
-            
+            get_proficiency("HEAVY", armor)
+
             class_features.append("DISCIPLE OF LIFE: Add 2 + Spell Lvl to Lvl 1+ Heal Spells")
             class_features.append("")
             
-            get_proficiency("HEAVY", armor)
-
-        if chosen_domain == "LIGHT":
+        if domain == "LIGHT":
 
             get_domain_spells("BURNING HANDS", "FAERIE FIRE")
-            spellbook_0.append("(Domain) LIGHT")
-
-            class_features.append("WARDING FLARE (Reaction): Give DISADV: Attack to creature within 30ft")
-            class_features.append("  : Uses per LR: {0}".format(domain_per_LR))
-            class_features.append("")
-            class_features.append("Gain Cantrip: Light")
+            
+            class_features.append("WARDING FLARE [Reaction]: Give DISADV: Attack to creature within 30ft")
+            class_features.append("                        : Uses per LR: {0}".format(domain_per_LR))
+            class_features.append("Gain Cantrip: {0}".format(get_spell("LIGHT", cleric_spell_0, spellbook_0)))
             class_features.append("")
             
-        if chosen_domain == "NATURE":
-
-            get_spell("ANY", druid_spell_0, spellbook_0)
-            druid_cantrip = spellbook_0[(len(spellbook_0)-1)]
+        if domain == "NATURE":
 
             get_domain_spells("ANIMAL FRIENDSHIP", "SPEAK WITH ANIMALS")
-            class_features.append("Gain Druid cantrip: {0}".format(druid_cantrip))
+            
+            class_features.append("Gain Druid cantrip: {0}".format(get_spell("ANY", druid_spell_0, spellbook_0)))
             class_features.append("")
             
             get_proficiency("HEAVY", armor)
 
-            domain_skills = [
-                        "ANIMAL HANDLING",
-                        "NATURE",
-                        "SURVIVAL"
-                        ]
-            get_expertise(domain_skills)
-            get_expertise(domain_skills)
+            class_skills = ["ANIMAL HANDLING","NATURE","SURVIVAL"]
+            get_class_skills(1)
         
-        if chosen_domain == "TEMPEST":
+        if domain == "TEMPEST":
 
             get_proficiency("MARTIAL", martial_wpns)
             get_proficiency("HEAVY", armor)
@@ -2920,15 +2863,15 @@ def get_class():
             class_features.append("     : Uses per LR: {0}".format(domain_per_LR))
             class_features.append("")
             
-        if chosen_domain == "TRICKERY":
+        if domain == "TRICKERY":
 
             get_domain_spells("CHARM PERSON", "DISGUISE SELF")
             
-            class_features.append("TRICKSTER'S BLESSING (action): Touch a willing creature other than you;")
+            class_features.append("TRICKSTER'S BLESSING [Action]: Touch a willing creature other than you;")
             class_features.append("            : give ADV: Dex(Stealth) Checks for 1 hour or until re-used")
             class_features.append("")
             
-        if chosen_domain == "WAR":
+        if domain == "WAR":
 
             get_proficiency("MARTIAL", martial_wpns)
             get_proficiency("HEAVY", armor)
@@ -2939,29 +2882,39 @@ def get_class():
             class_features.append("          : Uses per LR: {0}".format(domain_per_LR))
             class_features.append("")
             
-        if chosen_domain == "ARCANA":
+        if domain == "ARCANA":
             
             get_domain_spells("MAGIC MISSILE", "DETECT MAGIC")
             
-            get_spell("ANY", wiz_spell_0, spellbook_0)
-            domain_cantrip_1 = spellbook_0[(len(spellbook_0)-1)]
-            
-            get_spell("ANY", wiz_spell_0, spellbook_0)
-            domain_cantrip_2 = spellbook_0[(len(spellbook_0)-1)]
-
             class_features.append("Gain Prof: INT(Arcana) Checks")
             class_features.append("")
             class_features.append("Gain Two Wizard Cantrips:")
-            class_features.append("     : {0}".format(domain_cantrip_1))
-            class_features.append("     : {0}".format(domain_cantrip_2))
+            class_features.append("     : {0}".format(get_spell("ANY", wiz_spell_0, spellbook_0)))
+            class_features.append("     : {0}".format(get_spell("ANY", wiz_spell_0, spellbook_0)))
             class_features.append("")
 
+        get_spells(cleric_spell_0, 3)
+        get_spells(cleric_spell_1, spells_prepared)
+
+        choose_inventory("MACE", "WARHAMMER")
+        choose_inventory("LEATHER ARMOR", "SCALE/CHAIN")
+        choose_inventory("LIGHT XBOW", "SIMPLE WEAPON")
+        add_inventory(["SHIELD", "HOLY SYMBOL"])
+        
     if chosen_class == "DRUID":
 
         class_features.append(chosen_class)
         class_features.append("")
 
         get_hit_points(8)
+        get_proficiencies(["WISDOM", "INTELLIGENCE"], saves)
+        get_proficiencies(["CLUB","DAGGER","DART","JAVELIN","MACE","QUARTERSTAFF","SCIMITAR","SICKLE","SLING","SPEAR"], simple_wpns)
+        get_proficiencies(["LIGHT","MEDIUM","SHIELDS"], armor)
+        get_proficiency("HERBALISM KIT", tools)
+        get_proficiency("DRUIDIC", languages)
+
+        class_skills = ["ARCANA","DECEPTION","MEDICINE","ANIMAL HANDLING","NATURE","PERCEPTION","PERFORMANCE","SURVIVAL"]
+        get_class_skills(2)
 
         get_spellcasting("WISDOM", "2")
         
@@ -2972,39 +2925,15 @@ def get_class():
         class_features.append("      : After LR, Prepare up to {0} spells from Druid list".format(spells_prepared))
         class_features.append("      : Preparing takes at least 1 min per spell in meditation")
         class_features.append("")
-        class_features.append("DRUIDIC: Secret language of the Druids")
+        class_features.append("Proficient in DRUIDIC: Secret language of the Druids")
         class_features.append("")
         class_features.append("A Druid will not wear armor or wield a shield made of metal")
         class_features.append("")
 
         spellbook_1[0] = "LEVEL 1 SPELLS PREPARED:"    
-        for i in range(2):    
-            get_spell("ANY", druid_spell_0, spellbook_0)    
-        for i in range(spells_prepared):
-            get_spell("ANY", druid_spell_1, spellbook_1)                    
-
-        for ability in ["INTELLIGENCE", "WISDOM"]:
-            get_proficiency(ability, saves)
-        for weapon in ["CLUB","DAGGER","DART","JAVELIN","MACE","QUARTERSTAFF","SCIMITAR","SICKLE","SLING","SPEAR"]:
-            get_proficiency(weapon, simple_wpns)
-        for armor in ["LIGHT","MEDIUM","SHIELDS"]
-            get_proficiency(armor, armor)
-        get_proficiency("HERBALISM KIT", tools)
-        get_proficiency("DRUIDIC", languages)
+        get_spells(druid_spell_0, 2)  
+        get_spells(druid_spell_1, spells_prepared)                    
         
-        druid_skills = [
-                    "ARCANA",
-                    "DECEPTION",
-                    "MEDICINE",
-                    "ANIMAL HANDLING",
-                    "NATURE",
-                    "PERCEPTION",
-                    "PERFORMANCE",
-                    "SURVIVAL"
-                    ]
-        for i in range(2):
-            get_skill("ANY", druid_skills)
-
         choose_inventory("WOODEN SHIELD", "SIMPLE WEAPON")
         choose_inventory("SCIMITAR", "SIMPLE MELEE")
         add_inventory(["LEATHER ARMOR", "EXPLORER'S PACK", "DRUIDIC FOCUS"])
@@ -3033,32 +2962,18 @@ def get_class():
         class_features.append("")
 
         get_hit_points(10)
+        get_proficiencies(["STRENGTH", "CONSTITUTION"], saves)
+        get_proficiencies(["ALL","SHIELDS"], armor)
+        get_proficiencies(["SIMPLE", "MARTIAL"], martial_wpns)
+                    
+        class_skills = ["ACROBATICS","ANIMAL HANDLING","ATHLETICS","HISTORY","DECEPTION","INTIMIDATION","PERCEPTION","SURVIVAL"]
+        get_class_skills(2)
 
         class_features.append("SECOND WIND: (1/SR) Bonus Action to Heal 1d10 +Lvl HP")
         class_features.append("")
         class_features.append("{0} : {1}".format(style, style_description[style]))
         class_features.append("")
         
-        for ability in ["STRENGTH", "CONSTITUTION"]:
-            get_proficiency(ability, saves)
-        for armor in ["ALL","SHIELDS"]
-            get_proficiency(armor, armor)
-        for weapons in ["SIMPLE", "MARTIAL"]:
-            get_proficiency(weapon, martial_wpns)
-                    
-        fighter_skills = [
-                    "ACROBATICS",
-                    "ANIMAL HANDLING",
-                    "ATHLETICS",
-                    "HISTORY",
-                    "DECEPTION",
-                    "INTIMIDATION",
-                    "PERCEPTION",
-                    "SURVIVAL"
-                    ]
-        for i in range(2):
-            get_skill("ANY", fighter_skills)
-
         choose_inventory("CHAIN MAIL", "LEATHER/LONGBOW")
         choose_inventory("MARTIAL & SHIELD", "TWO MARTIAL WEAPONS")
         choose_inventory("LIGHT XBOW", "TWO HANDAXES")
@@ -3070,6 +2985,7 @@ def get_class():
         class_features.append("")
 
         get_hit_points(8)
+        get_proficiencies(["STRENGTH", "DEXTERITY"], saves)
 
         class_features.append("UNARMORED DEFENSE: AC = {0} (10+DEX+WIS)".format(10 + ability_modifiers["DEXTERITY"] + ability_modifiers["WISDOM"]))
         class_features.append("")
@@ -3085,21 +3001,11 @@ def get_class():
         else:
             get_proficiency("ANY", instruments)
 
-        for ability in ["STRENGTH", "DEXTERITY"]:
-            get_proficiency(ability, saves)
         get_proficiency("SIMPLE", simple_wpns)
         get_proficiency("SHORT SWORD", martial_wpns)
 
-        monk_skills = [
-                    "ACROBATICS",
-                    "ATHLETICS",
-                    "HISTORY",
-                    "DECEPTION",
-                    "PERFORMANCE",
-                    "STEALTH"
-                    ]
-        for i in range(2):
-            get_skill("ANY", monk_skills)
+        class_skills = ["ACROBATICS","ATHLETICS","HISTORY","DECEPTION","PERFORMANCE","STEALTH"]
+        get_class_skills(2)
 
         choose_inventory("SHORT SWORD", "SIMPLE WEAPON")
         choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
@@ -3111,34 +3017,22 @@ def get_class():
         class_features.append("")
 
         get_hit_points(10)
-        
-        class_features.append("DIVINE SENSE: (Action): until next turn, w/in 60ft")
-        class_features.append("    : Know location of celestial/fiend/undead")
-        class_features.append("    : Know location of consecrated/desecrated grounds")
-        class_features.append("    : Uses per LR: {0}".format(ability_modifiers["CHARISMA"] + 1))
-        class_features.append("")
-        class_features.append("LAY ON HANDS: Pool of Healing Power = 5 (5xLvl)")
-        class_features.append("    : (Action): Restore up to max pool remaining HP")
-        class_features.append("    : (Action): Cure one disease or poison (Per 5pts spent)")
-        class_features.append("")
-            
-        get_proficiency("ALL", armor)
-        get_proficiency("SHIELDS", armor)
+        get_proficiencies(["WISDOM", "CHARISMA"], saves)
+        get_proficiencies(["ALL","SHIELDS"], armor)
         get_proficiency("MARTIAL", martial_wpns)
-        get_proficiency("WISDOM", saves)
-        get_proficiency("CHARISMA", saves)
 
-        pal_skills = [
-                    "ATHLETICS",
-                    "DECEPTION",
-                    "INTIMIDATION",
-                    "MEDICINE",
-                    "PERSUASION",
-                    "PERFORMANCE",
-                ]
-        for i in range(2):
-            get_skill("ANY", pal_skills)
-    
+        pal_skills = ["ATHLETICS","DECEPTION","INTIMIDATION","MEDICINE","PERSUASION","PERFORMANCE"]
+        get_class_skills(2)
+        
+        class_features.append("DIVINE SENSE: [Action] until next turn, w/in 60ft:")
+        class_features.append("            : Know location of celestial/fiend/undead")
+        class_features.append("            : Know location of consecrated/desecrated grounds")
+        class_features.append("                 : Uses per LR: {0} (CHA+1)".format(ability_modifiers["CHARISMA"] + 1))
+        class_features.append("LAY ON HANDS: Pool of Healing Power = 5 (5xLvl)")
+        class_features.append("            : [Action] Restore up to max pool remaining HP")
+        class_features.append("            : [Action] Cure one disease or poison (Per 5pts spent)")
+        class_features.append("")
+
         choose_inventory("MARTIAL/SHIELD", "TWO MARTIAL WEAPONS")
         choose_inventory("5X JAVELINS", "SIMPLE MELEE")
         choose_inventory("PRIEST'S PACK", "EXPLORER'S PACK")
@@ -3146,7 +3040,7 @@ def get_class():
 
     if chosen_class == "RANGER":
 
-        favored_enemies = [
+        enemies = [
                         "ABERRATION",
                         "BEAST",
                         "CELESTIAL",
@@ -3162,10 +3056,10 @@ def get_class():
                         "PLANT",
                         "UNDEAD"
                         ]
-        chosen_enemies = []
-        chosen_enemy = ask_input(favored_enemies)               
+        favored_enemy = []
+        enemy = ask_input(favored_enemy)               
                                                                           
-        if chosen_enemy == "HUMANOID":                         
+        if enemy == "HUMANOID":                         
             humanoids = [
                             "AASIMAR",
                             "BUGBEAR",
@@ -3194,14 +3088,12 @@ def get_class():
                             "TIEFLING",
                             "TROGLODYTE",
                             ]
-            chosen_humanoid_1 = ask_input(humanoids)               
-            chosen_humanoid_2 = ask_input(humanoids)               
-            chosen_enemies.append(chosen_humanoid_1)
-            chosen_enemies.append(chosen_humanoid_2)
+            for i in range(2):
+                favored_enemy.append(ask_input(humanoids))
         else:
-            chosen_enemies.append(chosen_enemy)
+            favored_enemy.append(enemy)
         
-        favored_terrain = [
+        terrains = [
                         "ARCTIC",
                         "COAST",
                         "DESERT",
@@ -3211,56 +3103,44 @@ def get_class():
                         "SWAMP",
                         "UNDERDARK"
                         ]
-        chosen_terrain = ask_input(favored_terrain)
+        favored_terrain = ask_input(terrains)
 
-        if len(chosen_enemies) > 1:
-            chosen_class = "RANGER ({0} WALKER, {1}/{2} HUNTER)".format(chosen_terrain, chosen_humanoid_1, chosen_humanoid_2)
+        if len(favored_enemy) > 1:
+            class_features.append("RANGER ({0} WALKER, {1}/{2} HUNTER)".format(favored_terrain, favored_enemy[0], favored_enemy[1]))
         else:
-            chosen_class = "RANGER ({0} WALKER, {1} HUNTER)".format(chosen_terrain, chosen_enemy)
-
-        class_features.append(chosen_class)
+            class_features.append("RANGER ({0} WALKER, {1} HUNTER)".format(favored_terrain, favored_enemy[0]))
         class_features.append("")
 
-        for item in chosen_enemies:
-            class_features.append("FAVORED ENEMY: {0}".format(item))
+        get_hit_points(10)
+        get_proficiencies(["STRENGTH", "DEXTERITY"], saves)
+        get_proficiency("MARTIAL", martial_wpns)
+        get_proficiencies(["MEDIUM","SHIELDS"], armor)
+        
+        ranger_skills = ["ANIMAL HANDLING","ATHLETICS","DECEPTION","INVESTIGATION","NATURE","PERCEPTION","STEALTH","SURVIVAL"]
+        get_class_skills(2)
+
+        enemy_language = {
+            "AASIMAR" : "CELESTIAL",      "CELESTIAL" : "CELESTIAL",  "DRAGON" : "DRACONIC",
+            "KOBOLD" : "DRACONIC",        "DRAGONBORN" : "DRACONIC",  "LIZARDFOLK" : "DRACONIC",
+            "DWARF" : "DWARVEN",          "ELF" : "ELVEN",            "GIANT" : "GIANT",
+            "GOLIATH" : "GIANT",          "GITH" : "GITH",            "GNOLL" : "GNOLL",
+            "GOBLIN" : "GOBLIN",          "HOBGOBLIN" : "GOBLIN",     "BUGBEAR" : "GOBLIN",
+            "DROW" : "UNDERCOMMON",       "GENASI" : "PRIMORDIAL",    "ELEMENTAL" : "PRIMORDIAL",
+            "MERFOLK" : "PRIMORDIAL",     "ORC" : "ORC",              "HALF-ORC" : "ORC",
+            "TROGLODYTE" : "TROGLODYTE",  "FEY" : "SYLVAN",           "FIEND" : "INFERNAL",
+            "TIEFLING" : "INFERNAL",
+            }
+        for enemy in favored_enemy:
+            if enemy in enemy_language:
+                get_proficiency(enemy_language[enemy], languages)
+
+        for enemy in favored_enemy:
+            class_features.append("FAVORED ENEMY: {0}".format(enemy))
         class_features.append("    : ADV: WIS(Survival) Checks to track enemy")
         class_features.append("    : ADV: INT Checks to recall relevant general info")
         class_features.append("")
 
-        # Gain Language Proficiency    
-        for item in chosen_enemies:
-            if item == "AASIMAR" or item == "CELESTIAL":
-                get_proficiency("CELESTIAL", languages)
-            if item == "DRAGON" or item == "KOBOLD" or item == "DRAGONBORN" or item == "LIZARDFOLK":
-                get_proficiency("DRACONIC", languages)
-            if item == "DWARF":
-                get_proficiency("DWARVEN", languages)
-            if item == "ELF":
-                get_proficiency("ELVEN", languages)
-            if item == "GIANT" or item == "GOLIATH":
-                get_proficiency("GIANT", languages)
-            if item == "GITH":
-                get_proficiency("GITH", languages)
-            if item == "GNOLL":
-                get_proficiency("GNOLL", languages)
-            if item == "GOBLIN" or item == "HOBGOBLIN" or item == "BUGBEAR":
-                get_proficiency("GOBLIN", languages)
-            if item == "DROW":
-                get_proficiency("UNDERCOMMON", languages)
-            if item == "GENASI" or item == "ELEMENTAL" or item == "MERFOLK":
-                get_proficiency("PRIMORDIAL", languages)
-            if item == "ORC" or item == "HALF-ORC":
-                get_proficiency("ORC", languages)
-            if item == "TROGLODYTE":
-                get_proficiency("TROGLODYTE", languages)
-            if item == "FEY":
-                get_proficiency("SYLVAN", languages)
-            if item == "FIEND" or item == "TIEFLING":
-                get_proficiency("INFERNAL", languages)
-
-        get_hit_points(10)
-
-        class_features.append("NATURAL EXPLORER: {0}".format(chosen_terrain))
+        class_features.append("NATURAL EXPLORER: {0}".format(favored_terrain))
         class_features.append("  : 2x Prof (if already Prof): INT / WIS checks re: terrain")
         class_features.append("  : During long travel: not slowed by Difficult Terrain")
         class_features.append("  : Can not get lost except by magical means")
@@ -3268,27 +3148,8 @@ def get_class():
         class_features.append("  : Move stealthily at normal pace (solo)")
         class_features.append("  : Forage for 2x as much food")
         class_features.append("  : Learn exact number/size/timestamp of tracked creatures")
-        class_features.append("")
-            
-        get_proficiency("MARTIAL", martial_wpns)
-        get_proficiency("MEDIUM", armor)
-        get_proficiency("SHIELDS", armor)
-        get_proficiency("STRENGTH", saves)
-        get_proficiency("DETERITY", saves)
-
-        ranger_skills = [
-                    "ANIMAL HANDLING",
-                    "ATHLETICS",
-                    "DECEPTION",
-                    "INVESTIGATION",
-                    "NATURE",
-                    "PERCEPTION",
-                    "STEALTH",
-                    "SURVIVAL"
-                    ]
-        for i in range(2):
-            get_skill("ANY", anger_skills)
-
+        class_features.append("")    
+        
         choose_inventory("SCALE MAIL", "LEATHER ARMOR")
         choose_inventory("TWO SHORT SWORDS", "TWO SIMPLE MELEE")
         choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
@@ -3300,24 +3161,12 @@ def get_class():
         class_features.append("")
 
         get_hit_points(8)
-
-        class_features.append("SNEAK ATTACK: (1/turn): +1d6 damage if ADV: Attack roll")
-        class_features.append("         : OR if target is threatened from w/in 5ft")
-        class_features.append("         : AND you are *not* DISADV: Attack roll.")
-        class_features.append("")
-        class_features.append("THIEVES' CANT: Secret language dialect, jargon, and code")
-        class_features.append("         : Hide messages in normal convo (4x longer)")
-        class_features.append("         : Symbols indicate danger/territories/shelter")
-        class_features.append("")
-            
-        for weapon in ["SIMPLE","HAND XBOW","LONGSWORD","RAPIER","SHORT SWORD"]:
-            get_proficiency(weapon, martial_wpns)
+        get_proficiencies(["DEXTERITY", "INTELLIGENCE"], saves)
+        get_proficiencies(["SIMPLE","HAND XBOW","LONGSWORD","RAPIER","SHORT SWORD"], martial_wpns)
         get_proficiency("LIGHT", armor)
         get_proficiency("THIEVES' TOOLS", tools)
-        get_proficiency("DEXTERITY", saves)
-        get_proficiency("INTELLIGENCE", saves)
-
-        rogue_skills = [
+        
+        class_skills = [
                     "ACROBATICS",
                     "ATHLETICS",
                     "DECEPTION",
@@ -3330,18 +3179,26 @@ def get_class():
                     "SLEIGHT OF HAND",
                     "STEALTH"
                     ]
+        get_class_skills(4)
+
         expertise_skills = ["THIEVES' TOOLS"]
-
-        for i in range(4):
-            get_skill("ANY", rogue_skills)
-
+        
         for skill in skill_modifiers:
             if skill_modifiers[(skill)] > 0:
                 expertise_skills.append(skill)
 
         for i in range(2):
             get_expertise(expertise_skills)
-
+        
+        class_features.append("SNEAK ATTACK: (1/turn): +1d6 damage if ADV: Attack roll")
+        class_features.append("         : OR if target is threatened from w/in 5ft")
+        class_features.append("         : AND you are *not* DISADV: Attack roll.")
+        class_features.append("")
+        class_features.append("THIEVES' CANT: Secret language dialect, jargon, and code")
+        class_features.append("         : Hide messages in normal convo (4x longer)")
+        class_features.append("         : Symbols indicate danger/territories/shelter")
+        class_features.append("")
+            
         choose_inventory("RAPIER", "SHORT SWORD")
         choose_inventory("SHORTBOW", "SHORT SWORD")
         choose_inventory("BURGLAR'S PACK", "DUNGEONEER'S PACK")
@@ -3355,15 +3212,16 @@ def get_class():
         class_features.append("SORCERER ({0})".format(origin))
         class_features.append("")
 
-        get_hit_points(6)
+        get_proficiencies(["CONSTITUTION", "CHARISMA"], saves)
+        get_proficiencies(["DAGGER","DART","SLING","QUARTERSTAFF"], simple_wpns)
 
-        get_spellcasting("CHARISMA", "2")
+        class_skills = ["ARCANA","DECEPTION","INSIGHT","INTIMIDATION","PERSUASION","PERFORMANCE"]
+        get_class_skills(2)
         
-        for i in range(4):
-            get_spell("ANY", sorc_spell_0, spellbook_0)
-        for i in range(2):
-            get_spell("ANY", sorc_spell_1, spellbook_1)
-
+        get_spellcasting("CHARISMA", "2")
+        get_spells(sorc_spell_0, 4)
+        get_spells(sorc_spell_1, 2)
+        
         if origin == "DRACONIC BLOODLINE":
 
             global draconic_sorc
@@ -3371,19 +3229,8 @@ def get_class():
 
             get_proficiency("DRACONIC", languages)
 
-            sorc_bloodline = [
-                        "BLACK DRAGON",
-                        "BLUE DRAGON",
-                        "BRASS DRAGON",
-                        "BRONZE DRAGON",
-                        "COPPER DRAGON",
-                        "GOLD DRAGON",
-                        "GREEN DRAGON",
-                        "RED DRAGON",
-                        "SILVER DRAGON",
-                        "WHITE DRAGON"
-                        ]
-            class_features.append("DRACONIC BLOODLINE: {0}".format(get_item(sorc_bloodline)))
+            bloodline = ["BLACK","BLUE","BRASS","BRONZE","COPPER","GOLD","GREEN","RED","SILVER","WHITE"]
+            class_features.append("DRACONIC BLOODLINE: {0} DRAGON".format(get_item(bloodline)))
             class_features.append("  : 2x Prof: CHA checks v. Dragons")
             class_features.append("  : Gain +1 HP per Sorcerer level")
             class_features.append("  : Scales: Unarmored AC = {0} (13+DEX)".format(13 + ability_modifiers["DEXTERITY"]))
@@ -3401,27 +3248,13 @@ def get_class():
 
             get_proficiency("PRIMORDIAL", languages)
 
-            class_features.append("[B]: Immediately before or after you cast L1+ Spell,")
-            class_features.append("   : whirling gusts of air allow you to fly 10ft")
-            class_features.append("   : without provoking attacks of opportunity")
+            class_features.append("[Bonus]: Immediately before or after you cast L1+ Spell,")
+            class_features.append("       : whirling gusts of air allow you to fly 10ft")
+            class_features.append("       : without provoking attacks of opportunity")
             class_features.append("")
         
-        for weapon in ["DAGGER","DART","SLING","QUARTERSTAFF"]:
-            get_proficiency(weapon, simple_wpns)
-        get_proficiency("CONSTITUTION", saves)
-        get_proficiency("CHARISMA", saves)
-
-        sorc_skills = [
-                    "ARCANA",
-                    "DECEPTION",
-                    "INSIGHT",
-                    "INTIMIDATION",
-                    "PERSUASION",
-                    "PERFORMANCE"
-                    ]
-        for i in range(2):
-            get_skill("ANY", sorc_skills)
-
+        get_hit_points(6)
+        
         choose_inventory("LIGHT XBOW", "SIMPLE WEAPON")
         choose_inventory("COMPONENT POUCH", "ARCANE FOCUS")
         choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
@@ -3444,12 +3277,14 @@ def get_class():
         class_features.append("")
         
         get_hit_points(8)
-
+        get_proficiencies(["WISDOM", "CHARISMA"], saves)
+        get_proficiency("SIMPLE", simple_wpns)
+        get_proficiency("LIGHT", armor)
+        
+        class_skills = ["ARCANA","DECEPTION","HISTORY","INTIMIDATION","INVESTIGATION","NATURE","PERFORMANCE"]
+        get_class_skills(2)
+        
         get_spellcasting("CHARISMA", "1")
-
-        for i in range(2):
-            get_spell("ANY", warlock_spell_0, spellbook_0)
-            get_spell("ANY", warlock_spell_1, spellbook_1)
 
         if patron == "THE ARCHFEY":
 
@@ -3486,8 +3321,8 @@ def get_class():
         if patron == "THE CELESTIAL":
 
             expand_spell_list("CURE WOUNDS", "GUIDING BOLT")
-            spellbook_0.append("SACRED FLAME")
-            spellbook_0.append("LIGHT")
+            get_spell("SACRED FLAME", cleric_spell_0, spellbook_0)
+            get_spell("LIGHT", cleric_spell_0, spellbook_0)
 
             class_features.append("HEALING LIGHT: Pool of 2d6 (1+Lvl)")
             class_features.append("  [B] Heal 1 creature w/in 60ft from pool,")
@@ -3495,23 +3330,9 @@ def get_class():
             class_features.append("      Dice replenish after Long Rest")
             class_features.append("")
         
-        get_proficiency("SIMPLE", simple_wpns)
-        get_proficiency("LIGHT", armor)
-        get_proficiency("WISDOM", saves)
-        get_proficiency("CHARISMA", saves)
-
-        warlock_skills = [
-                    "ARCANA",
-                    "DECEPTION",
-                    "HISTORY",
-                    "INTIMIDATION",
-                    "INVESTIGATION",
-                    "NATURE",
-                    "PERFORMANCE"
-                    ]
-        for i in range(2):
-            get_skill("ANY", warlock_skills)
-
+        get_spells(warlock_spell_0, 2)
+        get_spells(warlock_spell_1, 2)
+        
         choose_inventory("QUARTERSTAFF", "SIMPLE WEAPON")
         choose_inventory("LIGHT XBOW", "SIMPLE WEAPON")
         choose_inventory("COMPONENT POUCH", "ARCANE FOCUS")
@@ -3524,39 +3345,19 @@ def get_class():
         class_features.append("")
 
         get_hit_points(6)
+        get_proficiencies(["WISDOM", "INTELLIGENCE"], saves)
+        get_proficiencies(["DAGGER","DART","SLING","QUARTERSTAFF","LIGHT XBOW"], simple_wpns)
+        
+        class_skills = ["ARCANA","HISTORY","DECEPTION","INVESTIGATION","MEDICINE","PERFORMANCE"]
+        get_class_skills(2)
 
         get_spellcasting("INTELLIGENCE", "2")
-        class_features.append("")
+        get_spells(wiz_spell_0, 3)
+        get_spells(wiz_spell_1, 6)
         
         class_features.append("ARCANE RECOVERY (1/LR): recover 1/2 Wiz Lvl in spell slots after SR")
         class_features.append("")
         
-        # Gain 3 Wizard Cantrips    
-        for i in range(3):
-            get_spell("ANY", wiz_spell_0, spellbook_0)
-        # Gain 6 Lv 1 Wizard Spells
-        for i in range(6):
-            get_spell("ANY", wiz_spell_1, spellbook_1)
-
-        get_proficiency("DAGGER", simple_wpns)
-        get_proficiency("DART", simple_wpns)
-        get_proficiency("SLING", simple_wpns)
-        get_proficiency("QUARTERSTAFF", simple_wpns)
-        get_proficiency("LIGHT XBOW", martial_wpns)
-        get_proficiency("INTELLIGENCE", saves)
-        get_proficiency("WISDOM", saves)
-
-        wiz_skills = [
-                    "ARCANA",
-                    "HISTORY",
-                    "DECEPTION",
-                    "INVESTIGATION",
-                    "MEDICINE",
-                    "PERFORMANCE"
-                    ]
-        for i in range(2):
-            get_skill("ANY", wiz_skills)
-
         choose_inventory("QUARTERSTAFF", "DAGGER")
         choose_inventory("COMPONENT POUCH", "ARCANE FOCUS")
         choose_inventory("SCHOLAR'S PACK", "EXPLORER'S PACK")
