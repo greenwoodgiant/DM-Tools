@@ -1,9 +1,7 @@
 from random import randint
-# from more_itertools import unique_everseen
 from time import sleep
 print ()
-"""
-"""
+
 #   Databases linking Attribute, Modifier, and Skill Bonus to a value 
 ability_scores = {
                 "STRENGTH" : 0,
@@ -250,6 +248,17 @@ saves = [
                 "WISDOM",
                 "CHARISMA"
                 ]
+all_profs = [
+    tools,
+    instruments,
+    gaming_sets,
+    vehicles,
+    languages,
+    simple_wpns,
+    martial_wpns,
+    armor,
+    saves
+    ]
 
 #   Empty lists to add Profs, Race/Class/Background features and Inventory items to.
 proficiencies = ["Languages (COMMON)"]
@@ -373,6 +382,22 @@ wiz_spell_0 = [
                 "THUNDERCLAP (XAN)",
                 "TOLL THE DEAD (XAN)"
                 ]
+cantrips = [
+    bard_spell_0,
+    cleric_spell_0,
+    druid_spell_0,
+    sorc_spell_0,
+    warlock_spell_0,
+    wiz_spell_0
+    ]
+class_cantrip = {
+    "BARD" : bard_spell_0,
+    "CLERIC" : cleric_spell_0,
+    "DRUID" : druid_spell_0,
+    "SORCERER" : sorc_spell_0,
+    "WARLOCK" : warlock_spell_0,
+    "WIZARD" : wiz_spell_0
+    }
 
 bard_spell_1 = [
                 "ANIMAL FRIENDSHIP",
@@ -517,162 +542,213 @@ wiz_spell_1 = [
                 "ICE KNIFE (XAN)",
                 "EARTH TREMOR (XAN)"
                 ]
+lv_1_spells = [
+    bard_spell_1,
+    cleric_spell_1,
+    druid_spell_1,
+    sorc_spell_1,
+    warlock_spell_1,
+    wiz_spell_1
+    ]
+class_lv_1 = {
+    "BARD" : bard_spell_1,
+    "CLERIC" : cleric_spell_1,
+    "DRUID" : druid_spell_1,
+    "SORCERER" : sorc_spell_1,
+    "WARLOCK" : warlock_spell_1,
+    "WIZARD" : wiz_spell_1
+    }
+
+all_spells = [cantrips, lv_1_spells]
+spell_classes = [
+                "BARD",
+                "CLERIC",
+                "DRUID",
+                "SORCERER",
+                "WARLOCK",
+                "WIZARD"]
+spell_ability = {
+    "BARD" : "CHA",
+    "CLERIC" : "WIS",
+    "DRUID" : "WIS",
+    "SORCERER" : "CHA",
+    "WARLOCK" : "CHA",
+    "WIZARD" : "INT"
+    }
 
 #   Empty lists to add spells to
 spellbook_0 = ["CANTRIPS:"]
 spellbook_1 = ["LEVEL 1 SPELLS:"]
 spellbook = [spellbook_0, spellbook_1]
 
+elements = [
+            "ACID",
+            "COLD",
+            "FIRE",
+            "LIGHTNING",
+            "THUNDER"
+            ]
+        
+
 #   Return a random item from a list
 def get_item(group):
-   item = (randint(1, (len(group))) - 1)
-   return group[item]
-#   Ask the user to pick from a list of options
+   index = (randint(1, (len(group))) - 1)
+   return group[index]
+#   Ask the user to pick from a list
 def ask_input(group):
-    print()
-    for option in group:
-        print(option)
-    print()
     
-    choice = input("Please select from above or type 'RANDOM': ")
-
-    if choice == "RANDOM":
+    if all_random == True:
         choice = get_item(group)
-        return choice
-    elif choice not in group:
+    else:
         print()
-        print("That is not an option. Please try again (case-sensitive)")
+        for option in group:
+            print(option)
         print()
-        choice = ask_input(group)
-    
+        
+        choice = input("Please select from above or type 'RANDOM': ")
+
+        if choice == "RANDOM":
+            choice = get_item(group)
+            return choice
+        elif choice not in group:
+            print()
+            print("That is not an option. Please try again (case-sensitive)")
+            print()
+            choice = ask_input(group)
+        
     return choice
 
-#   Adds proficiency bonus unless already proficient
-#   Will select another skill from full available list if so
-def get_skill(skill_set):
+#   Adds proficiency bonus (2) unless already proficient
+#   Will select another skill from available list if so
+def get_skill(name, skill_set):
     
-    chosen_skill = get_item(skill_set)
+    if name == "ANY":
+        name = get_item(skill_set)
 
-    #   If the character already has proficiency, remove the skill
-    #   from the original skill set and the list of available skills
-    #   and pick a new skill from the available skills. Otherwise,
+    #   If the character already has proficiency, check for the skill
+    #   in the list of available skills and remove it if found;
+    #   then pick a new skill from the available skills. Otherwise,
     #   Add proficiency bonus to the skill modifier
-    if skill_modifiers[(chosen_skill)] > 0:
-        skill_set.remove(chosen_skill)
-        if chosen_skill in avail_skills:
-            avail_skills.remove(chosen_skill)
-        get_skill(avail_skills)
+    if skill_modifiers[(name)] > 0:
+        if name in avail_skills:
+            avail_skills.remove(name)
+        get_skill("ANY", avail_skills)
     else:
-        skill_modifiers[(chosen_skill)] += 2
+        skill_modifiers[(name)] += 2
 
-    #   Check for the skill in the original or available skill set and remove it. 
-    if chosen_skill in skill_set:
-        skill_set.remove(chosen_skill)
-    if chosen_skill in avail_skills:
-        avail_skills.remove(chosen_skill)
+    #   Check for the skill in the available skill set and remove it. 
+    if name in avail_skills:
+        avail_skills.remove(name)
     
-    return chosen_skill
+    return name
 #   Adds proficiency bonus even if already proficient
 def get_expertise(skill_set):
     
-    chosen_skill = get_item(skill_set)
+    skill = get_item(skill_set)
 
     #   For Thieves' Tools, update Proficiency list to reflect Expertise
     #   Otherwise, add Proficiency (even if already added before) to bonus
     #   and remove the item from original skill set and available skills
-    if chosen_skill == "THIEVES' TOOLS":
+    if skill == "THIEVES' TOOLS":
         proficiencies.remove("Tools (THIEVES' TOOLS)")
         proficiencies.append("Tools (THIEVES' TOOLS) *EXPERTISE*")
     else:
-        skill_modifiers[(chosen_skill)] += 2
+        skill_modifiers[skill] += 2
 
-        if item in avail_skills:
-            avail_skills.remove(item)
-        if item in skill_set:
-            skill_set.remove(item)
+        if skill in avail_skills:
+            avail_skills.remove(skill)
+        if skill in skill_set:
+            skill_set.remove(skill)
     
-    return chosen_skill
-
-def get_proficiency(chosen_item, group):
+    return skill
+#   Takes chosen item from group, formats, and adds to proficiencies
+def get_proficiency(item, group):
     
-    if chosen_item == "GET":
-        chosen_item = get_item(group)
+    if item == "ANY":
+        item = get_item(group)
                 
-    if chosen_item in group:
-        group.remove(chosen_item)
+    if item in group:
+        group.remove(item)
+    for prof_list in all_profs:
+        if item in prof_list:
+            prof_list.remove(item)
     
     if group == tools:
-        inventory.append(chosen_item)
-        chosen_item = "Tools ({0})".format(chosen_item)
+        inventory.append(item)
+        item = "Tools ({0})".format(item)
     if group == instruments:
-        inventory.append(chosen_item)
-        chosen_item = "Instruments ({0})".format(chosen_item)
+        inventory.append(item)
+        item = "Instruments ({0})".format(item)
     if group == gaming_sets:
-        inventory.append(chosen_item)
-        chosen_item = "Games ({0})".format(chosen_item)
+        inventory.append(item)
+        item = "Games ({0})".format(item)
     if group == languages:
-        chosen_item = "Languages ({0})".format(chosen_item)
+        item = "Languages ({0})".format(item)
     if group == simple_wpns or group == martial_wpns:
-        chosen_item = "Weapons ({0})".format(chosen_item)
+        item = "Weapons ({0})".format(item)
     if group == armor:
-        chosen_item = "Armor ({0})".format(chosen_item)
+        item = "Armor ({0})".format(item)
     if group == saves:
-        chosen_item = "Saving Throws ({0})".format(chosen_item)
+        item = "Saving Throws ({0})".format(item)
     if group == vehicles:
-        chosen_item = "Vehicles ({0})".format(chosen_item)
+        item = "Vehicles ({0})".format(item)
     
-    proficiencies.append(chosen_item)
+    proficiencies.append(item)
    
-    return (chosen_item)
-
+    return (item)
+#   Adds feat to racial features
 def get_feat():
 
     def stat_required(feat, attribute, score):
     
         if ability_scores[(attribute)] < score:
-
             avail_feats.remove(feat)
             get_feat()
 
     def stat_bump(stat_1, stat_2):
-        stat_options = []
-        stat_options.append(stat_1)
-        stat_options.append(stat_2)
-
-        chosen_stat = get_item(stat_options)
-
-        if ability_scores[chosen_stat] < 20:
-            ability_scores[chosen_stat] += 1
         
-        elif stat_1 < 20 or stat_2 < 20:
-            stat_bump(stat_1, stat_2)
+        def bump(stat):
+            ability_scores[stat] +=1
+            return stat
         
-        return chosen_stat
+        if ability_scores[stat_1] < 20 and ability_scores[stat_2] >= 20:
+            choice = bump(stat_1)
+        elif ability_scores[stat_1] >= 20 and ability_scores[stat_2] < 20:
+            choice = bump(stat_2)
+        elif ability_scores[stat_1] >= 20 and ability_scores[stat_2] >= 20:
+            return
+        else:
+            choice = randint(1,2)
+            if choice == 1:
+                choice = bump(stat_1)
+            else:
+                choice = bump(stat_2)
+
+        return choice
     
-    if all_random == True:
-        chosen_feat = get_item(avail_feats)
-    else:
-        chosen_feat = ask_input(avail_feats)
+    update_mods()
 
-    if chosen_feat == "ALERT":
+    feat = ask_input(avail_feats)
+
+    if feat == "ALERT":
 
         race_features.append("ALERT: +5 bonus to Initiative")
-        race_features.append("     : Cannot be surprised while conscious.")
-        race_features.append("     : Creatures don't gain advantage for being hidden from you.")
+        race_features.append("   : Cannot be surprised while conscious.")
+        race_features.append("   : Creatures don't gain advantage for being hidden from you.")
         
         avail_feats.remove("ALERT")
         return "ALERT" 
-    if chosen_feat == "ATHLETE":
+    if feat == "ATHLETE":
 
         stat_bump("STRENGTH", "DEXTERITY")
 
         race_features.append("ATHLETE: Standing from prone only uses 5ft of movement.")
-        race_features.append("       : Climbing doesn't halve your speed.")
-        race_features.append("       : Only require 5ft for a running high/long jump instead of 10.")
+        race_features.append("   : Climbing doesn't halve your speed.")
+        race_features.append("   : Only require 5ft for a running high/long jump.")
 
         avail_feats.remove("ATHLETE")
         return "ATHLETE"
-    if chosen_feat == "ACTOR":
+    if feat == "ACTOR":
 
         ability_scores[("CHARISMA")] += 1
 
@@ -682,7 +758,7 @@ def get_feat():
 
         avail_feats.remove("ACTOR")
         return "ACTOR"   
-    if chosen_feat == "CHARGER":
+    if feat == "CHARGER":
 
         race_features.append("CHARGER: On [Dash], Use [Bonus] to make one melee attack or to shove a creature")
         race_features.append("       : If you move at least 10ft in straight line before the attack/shove,")
@@ -690,7 +766,7 @@ def get_feat():
 
         avail_feats.remove("CHARGER")
         return "CHARGER"
-    if chosen_feat == "CROSSBOW EXPERT":
+    if feat == "CROSSBOW EXPERT":
 
         race_features.append("CROSSBOW EXPERT: Ignore 'loading' quality of xbows you are proficient in")
         race_features.append("      : No DISADV: Ranged Attack rolls within 5ft of hostile creature")
@@ -698,15 +774,16 @@ def get_feat():
 
         avail_feats.remove("CROSSBOW EXPERT")
         return "CROSSBOW EXPERT"
-    if chosen_feat == "DEFENSIVE DUELIST":
+    if feat == "DEFENSIVE DUELIST":
 
         stat_required("DEFENSIVE DUELIST", "DEXTERITY", 13)
 
         race_features.append("DEFENSIVE DUELIST: When wielding finesse melee weapon and hit by melee attack,")
         race_features.append("        : Use [Reaction] to add Proficiency to AC for that attack")
+        
         avail_feats.remove("DEFENSIVE DUELIST")
         return "DEFENSIVE DUELIST"
-    if chosen_feat == "DUAL WIELDER":
+    if feat == "DUAL WIELDER":
 
         race_features.append("DUAL WIELDER: Gain +1 to AC while dual-wielding")
         race_features.append("      : Dual-wield weapons that aren't 'light'")
@@ -714,7 +791,7 @@ def get_feat():
 
         avail_feats.remove("DUAL WIELDER")
         return "DUAL WIELDER"
-    if chosen_feat == "DUNGEON DELVER":
+    if feat == "DUNGEON DELVER":
 
         race_features.append("DUNGEON DELVER: ADV: Perception / Investigation v. Secret Doors")
         race_features.append("      : ADV: Saves v. Traps, RES: Damage from Traps")
@@ -722,32 +799,24 @@ def get_feat():
 
         avail_feats.remove("DUNGEON DELVER")
         return "DUNGEON DELVER"
-    if chosen_feat == "DURABLE":
+    if feat == "DURABLE":
 
         ability_scores[("CONSTITUTION")] += 1
 
-        race_features.append("DURABLE: When rolling HD during SR, gain at least 2x CON Mod")
+        race_features.append("DURABLE: When rolling HD during SR, gain at least {0} (2x CON) HP per roll".format(ability_modifiers["CONSTITUTION"] * 2))
 
         avail_feats.remove("DURABLE")
         return "DURABLE"
-    if chosen_feat == "ELEMENTAL ADEPT":
+    if feat == "ELEMENTAL ADEPT":
 
-        elements = [
-                    "ACID",
-                    "COLD",
-                    "FIRE",
-                    "LIGHTNING",
-                    "THUNDER"
-                    ]
         elem_adept = get_item(elements)
         
         race_features.append("{0} ADEPT: Spells which deal {1} damage ignore DR.".format(elem_adept, elem_adept))
-        race_features.append("      : When you roll for {0} damage, count 1's as 2's".format(elem_adept))
-        race_features.append("")
+        race_features.append("      : When you roll for {0} damage, count 1s as 2s".format(elem_adept))
 
         elements.remove(elem_adept)
         return "ELEMENTAL ADEPT"
-    if chosen_feat == "GRAPPLER":
+    if feat == "GRAPPLER":
 
         stat_required("GRAPPLER", "STRENGTH", 13)
 
@@ -758,7 +827,7 @@ def get_feat():
 
         avail_feats.remove("GRAPPLER")
         return "GRAPPLER"
-    if chosen_feat == "GREAT WEAPON MASTER":
+    if feat == "GREAT WEAPON MASTER":
 
         race_features.append("GREAT WEAPON MASTER: On Critical Hit with melee or dropping")
         race_features.append("       : creature to 0HP, use [Bonus] for 1 melee attack")
@@ -767,94 +836,91 @@ def get_feat():
 
         avail_feats.remove("GREAT WEAPON MASTER")
         return "GREAT WEAPON MASTER"
-    if chosen_feat == "HEALER":
+    if feat == "HEALER":
 
         race_features.append("HEALER: When you use Healing Kit to stabilize, creature gains 1 HP as well")
-        race_features.append("      : [Action]: Use Healing Kit to restore 1d6 + 4 + target's HD in HP")
-        race_features.append("                : (Once per target per Short Rest)")
+        race_features.append("   : [Action]: Use Healing Kit to restore 1d6 + 4 + target's HD in HP")
+        race_features.append("             : (Once per target per Short Rest)")
 
         avail_feats.remove("HEALER")
         return "HEALER"
-    if chosen_feat == "HEAVILY ARMORED":
+    if feat == "HEAVILY ARMORED":
 
-        #*!* You will need to be proficient with Medium Armor through Race, Class, or Background to use this feat*!*")
+        #*!* You will need to be proficient with Medium Armor through Race, Class, or Background to use this feat*!*"
 
-        ability_scores[("STRENGTH")] += 1
-        if ability_scores[("STRENGTH")] > 20:
-            ability_scores[("STRENGTH")] = 20
-
+        if ability_scores[("STRENGTH")] < 20:
+            ability_scores[("STRENGTH")] += 1
+        
         get_proficiency("HEAVY", armor)
+
+        race_features.append("HEAVILY ARMORED: Gain proficiency in Heavy Armor")
+        race_features.append("   *You will need to also be proficient in Medium Armor to use this feat*")
 
         avail_feats.remove("HEAVILY ARMORED")
         return "HEAVILY ARMORED"
-    if chosen_feat == "HEAVY ARMOR MASTER":
+    if feat == "HEAVY ARMOR MASTER":
 
-        #"*!*You will need to be proficient with Heavy Armor through Race, Class, or Background to use this feat*!*")
-        
-        ability_scores[("STRENGTH")] += 1
-        if ability_scores[("STRENGTH")] > 20:
-            ability_scores[("STRENGTH")] = 20
+        if ability_scores[("STRENGTH")] < 20:
+            ability_scores[("STRENGTH")] += 1
 
         race_features.append("HEAVY ARMOR MASTER: While Heavily Armored, Gain DR 3")
         race_features.append("      : (Non-magical Bludgeoning/Piercing/Slashing)")
+        race_features.append("   *You will need to be proficient in Heavy Armor to use this feat*")
 
         avail_feats.remove("HEAVY ARMOR MASTER")
         return "HEAVILY ARMORED"
-    if chosen_feat == "INSPIRING LEADER":
+    if feat == "INSPIRING LEADER":
 
         stat_required("INSPIRING LEADER", "CHARISMA", 13)
 
-        race_features.append("INSPIRING LEADER: Spend 10 min inspiring companions,")
-        race_features.append("     : choose <6 friendly creatures (including yourself) who see/hear and understand you")
-        race_features.append("     : Gain temp HP = your Level + your Charisma Modifier (1/creature/SR)")
+        race_features.append("INSPIRING LEADER: Spend 10 min inspiring companions; choose <6 friendly")
+        race_features.append("     : creatures (including yourself) who see/hear and understand you;")
+        race_features.append("     : Gain {0} temp HP (Level+CHA) (Once per creature per SR)".format(ability_modifiers["CHARISMA"] + 1))
 
         avail_feats.remove("INSPIRING LEADER")
         return "INSPIRING LEADER"
-    if chosen_feat == "KEEN MIND":
+    if feat == "KEEN MIND":
 
-        ability_scores[("INTELLIGENCE")] += 1
-        if ability_scores[("INTELLIGENCE")] > 20:
-            ability_scores[("INTELLIGENCE")] = 20
+        if ability_scores[("INTELLIGENCE")] < 20:
+            ability_scores[("INTELLIGENCE")] += 1
 
         race_features.append("KEEN MIND: Always know which way is North / time of day")
         race_features.append("         : Accurately recall anything seen or heard in past month")
 
         avail_feats.remove("KEEN MIND")
         return "KEEN MIND"
-    if chosen_feat == "LIGHTLY ARMORED":
+    if feat == "LIGHTLY ARMORED":
 
         stat_bump("STRENGTH", "DEXTERITY")
-
         get_proficiency("LIGHT", armor)
-
         race_features.append("LIGHTLY ARMORED: Gain Proficiency in Light Armor")
 
         avail_feats.remove("LIGHTLY ARMORED")
         return "LIGHTLY ARMORED"
-    if chosen_feat == "LINGUIST":
+    if feat == "LINGUIST":
 
-        ability_scores[("INTELLIGENCE")] += 1
-        if ability_scores[("INTELLIGENCE")] > 20:
-            ability_scores[("INTELLIGENCE")] = 20
+        if ability_scores[("INTELLIGENCE")] < 20:
+            ability_scores[("INTELLIGENCE")] += 1
 
-        get_proficiency("GET", languages)
-        get_proficiency("GET", languages)
-        get_proficiency("GET", languages)
-
-        race_features.append("LINGUIST: Create written codes; INT check DC(8 + Prof + INT Mod) to decipher")
+        linguist = []
+        for i in range(3):
+            linguist.append(get_proficiency("ANY", languages))
+        
+        race_features.append("LINGUIST: Create written codes; INT check DC {0} (8+Prof+INT) to decipher".format(10 + ability_modifiers["INTELLIGENCE"]))
+        race_features.append("        : Gain proficiency in {0}, {1}, and {2}".format(linguist[0],linguist[1],linguist[2]))
 
         avail_feats.remove("LINGUIST")
         return "LINGUIST"
-    if chosen_feat == "LUCKY":
+    if feat == "LUCKY":
 
-        race_features.append("LUCKY: (3/LR) : On attack/ability_scores/saving throw,")
+        race_features.append("LUCKY: (3/LR) : On attack / ability check / saving throw,")
         race_features.append("     : before outcome is determined, roll an")
         race_features.append("     : additional d20 and take either roll.")
         race_features.append("     : Can also use for attack made against you.")
 
         avail_feats.remove("LUCKY")
         return "LUCKY"
-    if chosen_feat == "MAGE SLAYER":
+    if feat == "MAGE SLAYER":
 
         race_features.append("MAGE SLAYER: [Reaction]: When spell cast w/in 5ft of you,")
         race_features.append("     : Make melee weapon attack against that creature.")
@@ -863,43 +929,27 @@ def get_feat():
 
         avail_feats.remove("MAGE SLAYER")
         return "MAGE SLAYER"
-    if chosen_feat == "MAGIC INITIATE":
+    if feat == "MAGIC INITIATE":
 
-        initiate_classes = ["BARD", "CLERIC", "DRUID", "SORCERER", "WARLOCK", "WIZARD"]
-        chosen_class = get_item(initiate_classes)
+        initiate = get_item(spell_classes)
+        
+        initiate_cantrips = []
+        for i in range(2):
+            initiate_cantrips.append(get_spell("ANY", class_cantrip[initiate], spellbook_0))
+        
+        spell = get_spell("ANY", class_lv_1[initiate], spellbook_1)
 
-        if chosen_class == "BARD":
-            get_spell("GET", bard_spell_0, spellbook_0)
-            get_spell("GET", bard_spell_0, spellbook_0)
-            initiate_spell = get_item(bard_spell_1)
-        if chosen_class == "CLERIC":
-            get_spell("GET", cleric_spell_0, spellbook_0)
-            get_spell("GET", cleric_spell_0, spellbook_0)
-            initiate_spell = get_item(cleric_spell_1)
-        if chosen_class == "DRUID":
-            get_spell("GET", druid_spell_0, spellbook_0)
-            get_spell("GET", druid_spell_0, spellbook_0)
-            initiate_spell = get_item(druid_spell_1)
-        if chosen_class == "SORCERER":
-            get_spell("GET", sorc_spell_0, spellbook_0)
-            get_spell("GET", sorc_spell_0, spellbook_0)
-            initiate_spell = get_item(sorc_spell_1)
-        if chosen_class == "WARLOCK":
-            get_spell("GET", warlock_spell_0, spellbook_0)
-            get_spell("GET", warlock_spell_0, spellbook_0)
-            initiate_spell = get_item(warlock_spell_1)
-        if chosen_class == "WIZARD":
-            get_spell("GET", wiz_spell_0, spellbook_0)
-            get_spell("GET", wiz_spell_0, spellbook_0)
-            initiate_spell = get_item(warlock_spell_1)
-
-        race_features.append("{0} INITIATE: Cast {1} 1/LR at lowest level (CHA Spell Ability)".format(chosen_class, initiate_spell))
-
-        initiate_classes.remove(chosen_class)
+        race_features.append("{0} INITIATE: Learn {1}; Cast 1/LR at lowest level ({2} Spell Ability)".format(initiate, spell, spell_ability[initiate]))
+        race_features.append("            : Learn cantrips {0} / {1}".format(initiate_cantrips[0], initiate_cantrips[1]))
         return "MAGIC INITIATE"
-    if chosen_feat == "MARTIAL ADEPT":
+    if feat == "MARTIAL ADEPT":
 
-        race_features.append("MARTIAL ADEPT: Learn Two Maneuvers, Save DC: 8 + Prof + (STR or DEX)")
+        if ability_modifiers["DEXTERITY"] > ability_modifiers["STRENGTH"]:
+            martial_mod = ability_modifiers["DEXTERITY"]
+        else:
+            martial_mod = ability_modifiers["STRENGTH"]
+
+        race_features.append("MARTIAL ADEPT: Learn Two Maneuvers, Save DC: {0} (8+Prof+(STR or DEX)".format(martial_mod))
         race_features.append("     : +1 Superiority Die (d6) to fuel Maneuvers, replenish after [SR]")
 
         battle_maneuvers = [
@@ -942,21 +992,21 @@ def get_feat():
         chosen_mnvr_1 = get_item(battle_maneuvers)
         chosen_mnvr_2 = get_item(battle_maneuvers)
         
-        char_text1 = maneuver_text[battle_maneuvers.index(chosen_mnvr_1)]
-        char_text2 = maneuver_text[battle_maneuvers.index(chosen_mnvr_2)]
+        mnvr_text1 = maneuver_text[battle_maneuvers.index(chosen_mnvr_1)]
+        mnvr_text2 = maneuver_text[battle_maneuvers.index(chosen_mnvr_2)]
 
-        race_features.append(char_text1)
-        race_features.append(char_text2)
+        race_features.append(mnvr_text1)
+        race_features.append(mnvr_text2)
 
         return "MARTIAL ADEPT"
-    if chosen_feat == "MEDIUM ARMOR MASTER":
+    if feat == "MEDIUM ARMOR MASTER":
 
         race_features.append("MEDIUM ARMOR MASTER: No DISADV on Stealth in Med. Armor")
-        race_features.append("     : You can add your DEX bonus up to +3 in Med. Armor")
+        race_features.append("     : Your max DEX bonus in Med. Armor increases to +3")
 
         avail_feats.remove("MEDIUM ARMOR MASTER")
         return "MEDIUM ARMOR MASTER"
-    if chosen_feat == "MOBILE":
+    if feat == "MOBILE":
 
         race_features.append("MOBILE: Speed increases by 10ft")
         race_features.append("      : On [Dash]: Difficult terrain doesn't cost extra movement")
@@ -964,18 +1014,19 @@ def get_feat():
 
         avail_feats.remove("MOBILE")
         return "MOBILE"
-    if chosen_feat == "MODERATELY ARMORED":
+    if feat == "MODERATELY ARMORED":
 
         stat_bump("STRENGTH", "DEXTERITY")
 
         race_features.append("MODERATELY ARMORED: Gain prof: Medium Armor/Shields")
-        race_features.append("*!* Must also be proficient with Light Armor to use this feat*!*")
+        race_features.append("  * You must also be proficient with Light Armor to use this feat *")
 
         get_proficiency("MEDIUM", armor)
         get_proficiency("SHIELDS", armor)
 
+        avail_feats.remove("MODERATELY ARMORED")
         return "MODERATELY ARMORED"
-    if chosen_feat == "MOUNTED COMBATANT":
+    if feat == "MOUNTED COMBATANT":
 
         race_features.append("MOUNTED COMBATANT: While mounted and not incapacitated:")
         race_features.append("     : ADV: Melee Attack v. unmounted creature smaller than your mount")
@@ -985,19 +1036,19 @@ def get_feat():
 
         avail_feats.remove("MOUNTED COMBATANT")
         return "MOUNTED COMBATANT"
-    if chosen_feat == "OBSERVANT":
+    if feat == "OBSERVANT":
 
         stat_bump("INTELLIGENCE", "WISDOM")
 
-        skill_modifiers[("PERCEPTION")] += 5
-        skill_modifiers[("INVESTIGATION")] += 5
+        skill_modifiers["PERCEPTION"] += 5
+        skill_modifiers["INVESTIGATION"] += 5
 
         race_features.append("OBSERVANT: You can understand creatures by reading lips")
         race_features.append("         : +5 to Perception and Investigation checks")
 
         avail_feats.remove("OBSERVANT")
         return "OBSERVANT"
-    if chosen_feat == "POLEARM MASTER":
+    if feat == "POLEARM MASTER":
 
         race_features.append("POLEARM MASTER: On [Attack] w/ Glaive, Halberd, or Quarterstaff:")
         race_features.append("     : [Bonus]: Melee Attack with opposite end for 1d4 Bludgeoning")
@@ -1006,31 +1057,19 @@ def get_feat():
 
         avail_feats.remove("POLEARM MASTER")
         return "POLEARM MASTER"
-    if chosen_feat == "RESILIENT":
+    if feat == "RESILIENT":
 
-        chosen_stat = get_item(avail_attributes)
+        resilient = get_item(avail_attributes)
 
-        ability_scores[(chosen_stat)] += 1
+        ability_scores[(resilient)] += 1
         
-        get_proficiency("{0}".format(chosen_stat), saves)
+        get_proficiency(resilient, saves)
         
-        race_features.append("RESILIENT: Increase {0} by 1 and gain Prof: Saving Throws")
+        race_features.append("RESILIENT: Increase {0} by 1 and gain Prof: Saving Throws".format(resilient))
 
-        avail_feats.remove("RESILIENT")
         return "RESILIENT"
-    if chosen_feat == "RITUAL CASTER":
+    if feat == "RITUAL CASTER":
 
-        while ability_scores[("INTELLIGENCE")] < 13 and ability_scores[("WISDOM")] < 13:
-            avail_feats.remove("RITUAL CASTER")
-            get_item(avail_feats)
-
-        ritual_classes = [
-                        "BARD",
-                        "CLERIC",
-                        "DRUID",
-                        "SORCERER",
-                        "WARLOCK",
-                        "WIZARD"]
         bard_ritual = [
                         "COMPREHEND LANGUAGES",
                         "DETECT MAGIC",
@@ -1066,75 +1105,67 @@ def get_feat():
                         "ILLUSORY SCRIPT",
                         "UNSEEN SERVANT",
                         ]
+        ritual_classes = [
+                "BARD",
+                "CLERIC",
+                "DRUID",
+                "SORCERER",
+                "WARLOCK",
+                "WIZARD"]
+        ritual_lists = {
+            "BARD" : bard_ritual,
+            "CLERIC" : cleric_ritual,
+            "DRUID" : druid_ritual,
+            "SORCERER" : sorc_ritual,
+            "WARLOCK" : warlock_ritual,
+            "WIZARD" : wiz_ritual
+            }
+        
+        while ability_scores[("INTELLIGENCE")] < 13 and ability_scores[("WISDOM")] < 13:
+            avail_feats.remove("RITUAL CASTER")
+            get_item(avail_feats)
 
+        #   Narrow options to viable spellcasting classes
         if ability_scores["INTELLIGENCE"] < 13:
             ritual_classes.remove("WIZARD")
         if ability_scores["WISDOM"] < 13:
-            ritual_classes.remove("CLERIC")
-            ritual_classes.remove("DRUID")
+            for item in ["CLERIC", "DRUID"]:
+                ritual_classes.remove(item)
         if ability_scores["CHARISMA"] < 13:
-            ritual_classes.remove("BARD")
-            ritual_classes.remove("SORCERER")
-            ritual_classes.remove("WARLOCK")
+            for item in ["BARD", "SORCERER", "WARLOCK"]:
+                ritual_classes.remove(item)
+            
+        ritual_class = get_item(ritual_classes)
         
-        chosen_class = get_item(ritual_classes)
-
-        if chosen_class == "BARD":
-            get_spell("GET", bard_ritual, spellbook_1)
-            get_spell("GET", bard_ritual, spellbook_1)
-            spell_ability = "CHARISMA"
-        
-        if chosen_class == "CLERIC":
-            get_spell("GET", cleric_ritual, spellbook_1)
-            get_spell("GET", cleric_ritual, spellbook_1)
-            spell_ability = "WISDOM"
-        
-        if chosen_class == "DRUID":
-            get_spell("GET", druid_ritual, spellbook_1)
-            get_spell("GET", druid_ritual, spellbook_1)
-            spell_ability = "WISDOM"
-        
-        if chosen_class == "SORCERER":
-            get_spell("GET", sorc_ritual, spellbook_1)
-            get_spell("GET", sorc_ritual, spellbook_1)
-            spell_ability = "CHARISMA"
-        
-        if chosen_class == "WARLOCK":
-            get_spell("GET", warlock_ritual, spellbook_1)
-            get_spell("GET", warlock_ritual, spellbook_1)
-            spell_ability = "CHARISMA"
-        
-        if chosen_class == "WIZARD":
-            get_spell("GET", wiz_ritual, spellbook_1)
-            get_spell("GET", wiz_ritual, spellbook_1)
-            spell_ability = "INTELLIGENCE"
-        
-        ritual_classes.remove(chosen_class)
+        rituals = []
+        for i in range(2):
+            rituals.append(get_spell("ANY", ritual_lists[ritual_class], spellbook_1))       
 
         race_features.append("RITUAL CASTER: Gain a Ritual Book with two Level 1 Ritual spells")
-        race_features.append("     : Class: {0} ; Spellcasting Ability: {1}".format(chosen_class, spell_ability))
+        race_features.append("     : Class: {0} ; Spellcasting Ability: {1}".format(ritual_class, spell_ability[ritual_class]))
         race_features.append("     : You can add ritual spells found in written form if they are")
         race_features.append("     : on your class' spell list and the level is <= 1/2 your level (rounded douwn)")
         race_features.append("     : Adding the spell takes 2hrs / spell level and costs 50g / spell level")
+        race_features.append("     : Added to Ritual Book: {0} / {1}".format(rituals[0], rituals[1]))
 
         return "RITUAL CASTER"
-    if chosen_feat == "SAVAGE ATTACKER":
+    if feat == "SAVAGE ATTACKER":
 
         race_features.append("SAVAGE ATTACKER: 1/turn when you roll damage for melee weapon:")
         race_features.append("     : Re-roll the weapon's damage dice and take use either total")
 
         avail_feats.remove("SAVAGE ATTACKER")
         return("SAVAGE ATTACKER")
-    if chosen_feat == "SENTINEL":
+    if feat == "SENTINEL":
 
         race_features.append("SENTINEL: When you hit on an AoO, your target's speed drops to 0 that turn.")
         race_features.append("        : You can ignore a creature's [Disengage] when it leaves your reach")
         race_features.append("        : When a creature w/in reach attacks something other than you:")
-        race_features.append("        : [Reaction]: Melee weapon attack against that creature")
+        race_features.append("              : [Reaction]: Melee weapon attack against that creature")
 
         avail_feats.remove("SENTINEL")
         return "SENTINEL"
-    if chosen_feat == "SHARPSHOOTER":
+    if feat == "SHARPSHOOTER":
 
         race_features.append("SHARPSHOOTER: Attacking at Long Range doesn't impose DISADV")
         race_features.append("     : Ranged Weapons ignore half- and three-quarters cover")
@@ -1142,7 +1173,7 @@ def get_feat():
 
         avail_feats.remove("SHARPSHOOTER")
         return "SHARPSHOOTER"
-    if chosen_feat == "SHIELD MASTER":
+    if feat == "SHIELD MASTER":
 
         race_features.append("SHIELD MASTER: On [Att]: [Bonus]: Shove creature w/in 5ft")
         race_features.append("     : Add Shield's AC Bonus to DEX Saves while not incapicitated")
@@ -1151,23 +1182,20 @@ def get_feat():
 
         avail_feats.remove("SHIELD MASTER")
         return "SHIELD MASTER"
-    if chosen_feat == "SKILLED":
+    if feat == "SKILLED":
 
-        def get_skilled():
+        race_features.append("SKILLED: Gain proficiency in 3 skills or tool kits")
 
+        for i in range(3):
             skill_or_tool = randint(1,2)
-
             if skill_or_tool == 1:
-                get_skill(avail_skills)
+                skilled = get_skill("ANY", avail_skills)
             else:
-                get_proficiency("GET", tools)
+                skilled = get_proficiency("ANY", tools)
+            race_features.append("     : {0}".format(skilled))
         
-        get_skilled()
-        get_skilled()
-        get_skilled()
-
         return "SKILLED"
-    if chosen_feat == "SKULKER":
+    if feat == "SKULKER":
 
         stat_required("SKULKER", "DEXTERITY", 13)
 
@@ -1177,29 +1205,28 @@ def get_feat():
 
         avail_feats.remove("SKULKER")
         return "SKULKER"
-    if chosen_feat == "SPELL SNIPER":
+    if feat == "SPELL SNIPER":
 
-        #*!*You will need to be able to cast a spell (other than this cantrip) to use this feat*!*")
+        sniper_spells = {
+                        "CHILL TOUCH" : "CHA or INT",
+                        "ELDRITCH BLAST" : "CHA",
+                        "FIRE BOLT" : "CHA or INT",
+                        "PRODUCE FLAME" : "WIS",
+                        "RAY OF FROST" : "CHA or INT",
+                        "SHOCKING GRASP" : "CHA or INT",
+                        "THORN WHIP" : "WIS"
+                        }
+        sniper = get_spell("ANY", sniper_spells, spellbook_0)
         
         race_features.append("SPELL SNIPER: Double the range of Spells with Attack rolls")
         race_features.append("     : Ranged Spell Attacks ignore half- and three-quarters cover")
-        race_features.append("     : Gain Cantrip: Use Ability appropriate to Spellcasting Class")
-
-        sniper_spells = [
-                        "CHILL TOUCH",
-                        "ELDRITCH BLAST",
-                        "FIRE BOLT",
-                        "PRODUCE FLAME",
-                        "RAY OF FROST",
-                        "SHOCKING GRASP",
-                        "THORN WHIP"
-                        ]
-        get_spell("GET", sniper_spells, spellbook_0)
+        race_features.append("     : Gain Cantrip: {0} ({1} spellcasting ability)".format(sniper, sniper_spells[sniper]))
+        race_features.append("  *You will need to be able to cast a spell (other than this cantrip) to use this feat*")
 
         avail_feats.remove("SPELL SNIPER")
 
         return "SPELL SNIPER"
-    if chosen_feat == "TAVERN BRAWLER":
+    if feat == "TAVERN BRAWLER":
 
         stat_bump("STRENGTH", "CONSTITUTION")
 
@@ -1209,66 +1236,73 @@ def get_feat():
 
         avail_feats.remove("TAVERN BRAWLER")
         return "TAVERN BRAWLER"
-    if chosen_feat == "TOUGH":
+    if feat == "TOUGH":
         tough = True
 
         race_features.append("TOUGH: Hit Point Max increased by 2x Lvl, and wih every")
-        race_features.append("     : level gained, it increased by an additional 2")
+        race_features.append("     : level gained, it increases by an additional 2")
 
         avail_feats.remove("TOUGH")
         return "TOUGH"
-    if chosen_feat == "WAR CASTER":
+    if feat == "WAR CASTER":
 
-        #*!*You will need to be able to cast a spell to use this feat*!*")
-        
         race_features.append("WAR CASTER: ADV: CON Saves to maintain Concentration through damage")
         race_features.append("     : Perform Somatic spell components whith Wpn/Shield equipped")
         race_features.append("     : Cast spell with Attack roll as AoO when creature leaves your reach")
-        race_features.append("     : (Spell must have Casting Time: 1 action / target only that creature)")
+        race_features.append("          : (Casting Time: 1 action / target only that creature)")
+        race_features.append("  * You will need to be able to cast a spell to use this feat *")
 
         avail_feats.remove("WAR CASTER")
         return "WAR CASTER"
-    if chosen_feat == "WEAPON MASTER":
+    if feat == "WEAPON MASTER":
 
         stat_bump("STRENGTH", "DEXTERITY")
 
         race_features.append("WEAPON MASTER: Gain Prof: 4 additional weapons")
 
-        def master_weapon():
-
-            weapon_types = ["SIMPLE", "MARTIAL"]
-            chosen_type = get_item(weapon_types)
-
-            if chosen_type == "SIMPLE":
-                get_proficiency("GET", simple_wpns)
-            if chosen_type == "MARTIAL":
-                get_proficiency("GET", martial_wpns)
-
-        master_weapon()
-        master_weapon()
-        master_weapon()
-        master_weapon()
+        for i in range(4):
+            weapon_type = randint(1,2)
+            if weapon_type == 1:
+                weapon = get_proficiency("ANY", simple_wpns)
+            else:
+                weapon = get_proficiency("ANY", martial_wpns)
+            race_features.append("      : {0}".format(weapon))
 
         avail_feats.remove("WEAPON MASTER")
         return "WEAPON MASTER"
- 
+    
+    race_features.append("")
+
 def get_spell(name, from_list, to_spellbook):
     
-        if name == "GET":
+        if name == "ANY":
             name = get_item(from_list)
+        
         to_spellbook.append(name)
         from_list.remove(name)
+
+        for spell_list in cantrips:
+            if name in spell_list:
+                spell_list.remove(name)
+        
+        for spell_list in lv_1_spells:
+            if name in spell_list:
+                spell_list.remove(name)
+
         return name
 
-def roll_attribute():
-
+#   Roll 4d6 and add the top three rolls (reroll if less than 8)
+def roll_4d6():
     roll = [randint(1,6), randint(1,6), randint(1,6), randint(1,6)]
     roll = sorted(roll)                         
     score = roll[1] + roll[2] + roll[3]
     while score < 8:
-        score = roll_attribute()
+        score = roll_4d6()
     return score
+for score in ability_scores:
+    ability_scores[score] = roll_4d6()
 
+#   Calculate modifiers based on attribute scores
 def update_mods():
     #   If the modifer has a half, take off the half
     for key in ability_modifiers:
@@ -1279,10 +1313,19 @@ def update_mods():
             ability_modifiers[key] += -0.5        
 
         ability_modifiers[key] = int(ability_modifiers[key])
+#   Calculate modifiers and print ability scores with mods
+def print_ability_scores():
 
-#   Roll 4d6 and drop the lowest for each ability score
-for score in ability_scores:
-    ability_scores[score] = roll_attribute()
+    update_mods()
+
+    print()
+    for item in ability_scores:
+        if ability_modifiers[(item)] > 0:
+            print ("{0}: {1} (Mod: +{2})".format(item, ability_scores[item], ability_modifiers[item]))
+        else:
+            print ("{0}: {1} (Mod: {2})".format(item, ability_scores[item], ability_modifiers[item]))
+        print ()
+        sleep(1)
 
 #   These variables will affect hit point totals if set to True
 tough = False
@@ -1294,13 +1337,15 @@ if all_random == "Y" or all_random == "y" or all_random == "YES" or all_random =
     all_random = True
 else:
     all_random = False
+    print()
+    print_ability_scores()
 print()
 
 #####                #####
 ###        RACE        ###
 #####                #####
 
-race = [
+races = [
         "HUMAN",
         "ELF",
         "DWARF",
@@ -1335,17 +1380,18 @@ def get_race():
 
     def get_age(low, young, old, high):
         
-        
-        char_age = randint(low, high)
+        age = randint(low, (high + ((high-low) // 2)))
 
-        if char_age <= young:               
+        if age <= young:               
             how_old = "Young Adult"         
-        elif char_age <= old:               
+        elif age <= old:               
             how_old = "Adult"               
-        else:
+        elif age <= high:
             how_old = "Middle-aged"
+        else:
+            how_old = "Elderly"
 
-        race_features.append("AGE: {0} ({1})".format(char_age, how_old))
+        race_features.append("AGE: {0} ({1})".format(age, how_old))
         race_features.append("")
 
     def get_size(height_mod, base_height, weight_mod, base_weight):
@@ -1353,81 +1399,76 @@ def get_race():
         roll_height = randint(2,height_mod)                  
         roll_weight = randint(2,weight_mod)                  
                                                     
-        char_height = (roll_height + base_height)
-        char_weight = ((roll_height * roll_weight) + base_weight)
+        height = (roll_height + base_height)
+        weight = ((roll_height * roll_weight) + base_weight)
 
-        height_feet = char_height // 12
-        height_inches = char_height % 12
+        height_feet = height // 12
+        height_inches = height % 12
 
         race_features.append("HEIGHT: {0}' {1}\"".format(height_feet, height_inches))
-        race_features.append("WEIGHT: {0} lbs".format(char_weight))
+        race_features.append("WEIGHT: {0} lbs".format(weight))
         race_features.append("")
     
-    def get_random_alignment():
+    def get_alignment(chaos_law, good_evil):
 
-        roll_alignment = randint(1,100)
-        if roll_alignment < 6:
-            char_align = "CHAOTIC EVIL"
-        elif roll_alignment < 12:
-            char_align = "NEUTRAL EVIL"
-        elif roll_alignment < 20:
-            char_align = "LAWFUL EVIL"
-        elif roll_alignment < 30:
-            char_align = "CHAOTIC NEUTRAL"
-        elif roll_alignment < 45:
-            char_align = "TRUE NEUTRAL"
-        elif roll_alignment < 60:
-            char_align = "LAWFUL NEUTRAL"
-        elif roll_alignment < 75:
-            char_align = "CHAOTIC GOOD"
-        elif roll_alignment < 90:
-            char_align = "NEUTRAL GOOD"
-        else:
-            char_align = "LAWFUL GOOD"
+        lawfulness = ["LAWFUL", "NEUTRAL", "CHAOTIC"]
+        goodness = ["GOOD", "NEUTRAL", "EVIL"]
+
+        def skew(pref1, pref2, pref3):
+            roll = randint(1,100)
+            if roll < 60:
+                align = pref1
+            elif roll < 85:
+                align = pref2
+            else:
+                align = pref3
+            return align
+
+        if chaos_law == "RANDOM":
+            chaos_law = get_item(lawfulness)
+        if good_evil == "RANDOM":
+            good_evil = get_item(goodness)
         
-        race_features.append(char_align)
+        if chaos_law == "SKEW LAWFUL":
+            chaos_law = skew("LAWFUL", "NEUTRAL", "CHAOTIC")
+        if chaos_law == "SKEW NEUTRAL":
+            chaos_law = skew("NEUTRAL", "LAWFUL", "CHAOTIC")
+        if chaos_law == "SKEW CHAOTIC":
+            chaos_law = skew("CHAOTIC", "NEUTRAL", "LAWFUL")
+        
+        if good_evil == "SKEW GOOD":
+            good_evil = skew("GOOD", "NEUTRAL", "EVIL")
+        if good_evil == "SKEW NEUTRAL":
+            good_evil = skew("NEUTRAL", "GOOD", "EVIL")
+        if good_evil == "SKEW EVIL":
+            good_evil = skew("EVIL", "NEUTRAL", "GOOD")
+        
+        alignment = "{0} {1}".format(chaos_law, good_evil)
+        if alignment == "NEUTRAL NEUTRAL":
+            alignment = "TRUE NEUTRAL"
+        
+        race_features.append(alignment)
         race_features.append("")
 
-    def get_underdark_alignment():
-
-        roll_alignment = randint(1,100)
-        if roll_alignment < 40:
-            char_align = "CHAOTIC EVIL"
-        if roll_alignment < 60:
-            char_align = "CHAOTIC NEUTRAL"
-        elif roll_alignment < 80:
-            char_align = "NEUTRAL EVIL"
-        elif roll_alignment < 90:
-            char_align = "LAWFUL EVIL"
-        else:
-            char_align = "TRUE NEUTRAL"
-        race_features.append(char_align)
+        return alignment
+    
+    def get_trait(trait, feet):
+        race_features.append("{0}: {1}ft".format(trait, feet))
         race_features.append("")
 
-    def get_speed(feet):
-
-        feet_per_round = "SPEED: {0}ft".format(feet)
-        race_features.append(feet_per_round)
-        race_features.append("")
-
-        return feet
-
-    def get_darkvision(feet):
-
-        feet = "DARKVISION: {0}ft".format(feet)
-        race_features.append(feet)
-        race_features.append("")
-
-        return feet
-
-    def raise_stat_by(amount):
+    def raise_stat(stat, by_amount):
                                     
-        chosen_attribute = get_item(avail_attributes)
+        if stat == "ANY":
+            stat = ask_input(avail_attributes)
         
-        ability_scores[(chosen_attribute)] += amount
-        avail_attributes.remove(chosen_attribute)
+        ability_scores[stat] += by_amount
         
-        return chosen_attribute
+        print("Raised {0} by {1}".format(stat, by_amount))
+        print()
+        
+        avail_attributes.remove(stat)
+        
+        return stat
 
     def get_monstrous_origin():
 
@@ -1441,109 +1482,49 @@ def get_race():
             "You seek to prevent your home from great tragedy.",
             "You have only brief flashes of memory of your past."
             ]
-        char_mon_origin = get_item(monstrous_origins)
-        char_mon_origin = "MONSTROUS ORIGIN: {0}".format(char_mon_origin)
-        race_features.append(char_mon_origin)
+        race_features.append("MONSTROUS ORIGIN: {0}".format(get_item(monstrous_origins)))
         race_features.append("")
 
-        return char_mon_origin
+    race = ask_input(races)
 
-    if all_random == True:
-        chosen_race = get_item(race)
-    else:
-        chosen_race = ask_input(race)
+    if race == "RANDOM":
+        race = get_item(races)
     
-    if chosen_race == "RANDOM":
-        get_item(race)
-    
-    if chosen_race == "HUMAN":
+    if race == "HUMAN":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
         
+        get_alignment("RANDOM", "RANDOM")
         get_age(15, 25, 45, 60)
         get_size(20, 56, 8, 110)
-
-        get_random_alignment()
-        
-        get_proficiency("GET", languages)
-
-        get_speed(30)
+        get_trait("SPEED", 30)
+        get_proficiency("ANY", languages)
         
         variant = randint(1,2)
         if variant == 1:
-            for key in ability_scores:
-                ability_scores[key] += 1
+            for attribute in ability_scores:
+                raise_stat(attribute, 1)
         if variant == 2:
-            chosen_stat_1 = raise_stat_by(1)
-            chosen_stat_2 = raise_stat_by(1)
-            # Function removes chosen stats from list, so:
-            avail_attributes.append(chosen_stat_1)
-            avail_attributes.append(chosen_stat_2)
+            raise_stat("ANY", 1)
+            raise_stat("ANY", 1)
             
-            get_skill(avail_skills)
-            
+            get_skill("ANY", avail_skills)
             get_feat()
 
-    if chosen_race == "DWARF":
+    if race == "DWARF":
 
         subrace = ["HILL DWARF", "MOUNTAIN DWARF", "DUERGAR"]
-        if all_random == True:
-            chosen_race = get_item(subrace)
-        else:
-            chosen_race = ask_input(subrace)
+        race = ask_input(subrace)
         
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
         
+        raise_stat("CONSTITUTION", 2)
+
         get_age(35, 50, 150, 200)
         get_size(8, 46, 12, 125)
-
-        ability_scores["CONSTITUTION"] += 2
-
-        dwarf_tools = ["SMITH'S TOOLS", "BREWER'S SUPPLIES", "MASON'S TOOLS"]
-        get_proficiency("GET", dwarf_tools)
-        get_proficiency("DWARVEN", languages)
-        
-        if chosen_race == "HILL DWARF":
-
-            ability_scores["WISDOM"] += 1
-
-            get_random_alignment()
-            
-            get_darkvision(60)
-            
-            race_features.append("HILL-BRED: +1 Hit Point per level")
-            hill_dwarf = True
-
-        if chosen_race == "MOUNTAIN DWARF":
-
-            ability_scores["STRENGTH"] += 1
-
-            get_random_alignment()
-
-            get_darkvision(60)
-
-            get_proficiency("MEDIUM", armor)
-            get_proficiency("BATTLEAXE", martial_wpns)
-            get_proficiency("WARHAMMER", martial_wpns)
-            get_proficiency("HANDAXE", simple_wpns)
-            get_proficiency("LIGHT HAMMER", simple_wpns)
-
-        if chosen_race == "DUERGAR":
-
-            ability_scores[("STRENGTH")] += 1
-
-            get_underdark_alignment()
-            
-            get_darkvision(120)
-
-            get_proficiency("UNDERCOMMON", languages)
-
-            race_features.append("ADV: Saving Throws v. Illusions / Charm / Paralysis")
-            race_features.append("DISADV: Attack / Perception Rolls in direct sunlight")
-        
-        get_speed(25)
+        get_trait("SPEED", 25)
 
         race_features.append("ADV: Saving Throws v. Poison")
         race_features.append("RES: Poison Damage")
@@ -1551,148 +1532,162 @@ def get_race():
         race_features.append("2x Prof on History Checks re: Stonework")
         race_features.append("")
 
-    if chosen_race == "ELF":
+        dwarf_tools = ["SMITH'S TOOLS", "BREWER'S SUPPLIES", "MASON'S TOOLS"]
+        get_proficiency("ANY", dwarf_tools)
+        get_proficiency("DWARVEN", languages)
+        
+        if race == "HILL DWARF":
+
+            raise_stat("WISDOM", 1)
+
+            get_alignment("RANDOM", "SKEW GOOD")
+            
+            get_trait("DARKVISION", 60)
+            
+            hill_dwarf = True
+            race_features.append("HILL-BRED: +1 Hit Point per level")
+            race_features.append("")
+            
+        if race == "MOUNTAIN DWARF":
+
+            raise_stat("STRENGTH", 1)
+
+            get_alignment("SKEW LAWFUL", "RANDOM")
+
+            get_trait("DARKVISION", 60)
+
+            get_proficiency("MEDIUM", armor)
+            get_proficiency("BATTLEAXE", martial_wpns)
+            get_proficiency("WARHAMMER", martial_wpns)
+            get_proficiency("HANDAXE", simple_wpns)
+            get_proficiency("LIGHT HAMMER", simple_wpns)
+
+        if race == "DUERGAR":
+
+            ability_scores[("STRENGTH")] += 1
+
+            get_alignment("SKEW LAWFUL", "SKEW EVIL")
+            
+            get_trait("DARKVISION", 120)
+
+            get_proficiency("UNDERCOMMON", languages)
+
+            race_features.append("ADV: Saving Throws v. Illusions / Charm / Paralysis")
+            race_features.append("DISADV: Attack / Perception Rolls in direct sunlight")
+            race_features.append("")
+
+    if race == "ELF":
 
         def get_elven_weapons():
-            get_proficiency("LONGSWORD", martial_wpns)
-            get_proficiency("LONGBOW", martial_wpns)
-            get_proficiency("SHORT SWORD", martial_wpns)
-            get_proficiency("SHORT BOW", simple_wpns)
-
+            for item in ["LONGBOW", "LONGSWORD", "SHORT BOW", "SHORT SWORD"]:
+                get_proficiency(item, martial_wpns)
+            
         subrace = ["HIGH ELF", "WOOD ELF", "DROW"]
-        if all_random == True:
-            chosen_race = get_item(subrace)
-        else:
-            chosen_race = ask_input(subrace)
+        race = ask_input(subrace)
         
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
+        raise_stat("DEXTERITY", 2)
+        
         get_age(80, 125, 325, 400)
         get_size(16, 54, 5, 90)
+        get_trait("SPEED", 30)
         
-        ability_scores["DEXTERITY"] += 2
-        
-        skill_modifiers["PERCEPTION"] += 2
-
+        get_proficiency("PERCEPTION", avail_skills)
         get_proficiency("ELVEN", languages)
 
-        get_speed(30)
+        if race == "HIGH ELF":
+
+            raise_stat("INTELLIGENCE", 1)
+            get_alignment("SKEW LAWFUL", "RANDOM")
+            get_trait("DARKVISION", 60)
         
-        race_features.append("ADV : Saving Throws v. Charm")
-        race_features.append("4 hrs Meditative 'Trance' = 8 hrs Sleep")
-        race_features.append("IMMUNE : Magical Sleep")
+            cantrip_class = get_item(spell_classes)
+            for item in spell_classes:
+                if cantrip_class == item:
+                    elven_cantrip = get_spell("ANY", class_cantrip[item], spellbook_0)
 
-        if chosen_race == "HIGH ELF":
-
-            get_random_alignment()
-        
-            ability_scores["INTELLIGENCE"] += 1
-
-            get_darkvision(60)
-        
-            cantrip_class = [
-                            "BARD",
-                            "CLERIC",
-                            "DRUID",
-                            "SORCERER",
-                            "WARLOCK",
-                            "WIZARD"
-                            ]
-            chosen_cantrip = get_item(cantrip_class)
-            if chosen_cantrip == "BARD":
-                get_spell("GET", bard_spell_0, spellbook_0)
-            if chosen_cantrip == "CLERIC":
-                get_spell("GET", cleric_spell_0, spellbook_0)
-            if chosen_cantrip == "DRUID":
-                get_spell("GET", druid_spell_0, spellbook_0)
-            if chosen_cantrip == "SORCERER":
-                get_spell("GET", sorc_spell_0, spellbook_0)
-            if chosen_cantrip == "WARLOCK":
-                get_spell("GET", warlock_spell_0, spellbook_0)
-            if chosen_cantrip == "WIZARD":
-                get_spell("GET", wiz_spell_0, spellbook_0)
-
-            elven_cantrip = spellbook_0[(len(spellbook_0) -1)]
             race_features.append("ELVEN MAGIC: Gain 1 Cantrip: {0} (INT spell ability)".format(elven_cantrip))
             race_features.append("")
 
             get_elven_weapons()
-            get_proficiency("GET", languages)
+            get_proficiency("ANY", languages)
 
-        if chosen_race == "WOOD ELF":
+        if race == "WOOD ELF":
 
-            get_random_alignment()
-
-            get_elven_weapons()
-
-            get_darkvision(60)
+            raise_stat("WISDOM", 1)
+            get_alignment("SKEW CHAOTIC", "SKEW GOOD")
+            get_trait("DARKVISION", 60)
             
             race_features.append("MASK OF THE WILD: Can [Hide] in Lightly Obscuring Nature")
+            race_features.append("")
         
-        if chosen_race == "DROW":
+            get_elven_weapons()
 
-            get_underdark_alignment()
-            
-            ability_scores["CHARISMA"] += 1
+        if race == "DROW":
 
-            get_proficiency("RAPIER", martial_wpns)
-            get_proficiency("HAND XBOW", martial_wpns)
-            get_proficiency("UNDERCOMMON", languages)
-
-            get_darkvision(120)
+            raise_stat("CHARISMA", 1)
+            get_alignment("SKEW LAWFUL", "SKEW EVIL")
+            get_trait("DARKVISION", 120)
 
             race_features.append("DISADV: Attack / Perception (Sight) in Direct Sunlight")
             race_features.append("Gain Cantrip: Dancing Lights")
+            race_features.append("")
+            
+            get_proficiency("RAPIER", martial_wpns)
+            get_proficiency("SHORT SWORD", martial_wpns)
+            get_proficiency("HAND XBOW", martial_wpns)
+            get_proficiency("UNDERCOMMON", languages)
+            get_spell("DANCING LIGHTS", wiz_spell_0, spellbook_0)
+        
+        race_features.append("ADV : Saving Throws v. Charm")
+        race_features.append("4 hrs Meditative 'Trance' = 8 hrs Sleep")
+        race_features.append("IMMUNE : Magical Sleep")
+        race_features.append("")
 
-            spellbook_0.append("DANCING LIGHTS (Drow)")
-
-    if chosen_race == "HALFLING":
+    if race == "HALFLING":
 
         subrace = ["LIGHTFOOT HALFLING", "STOUT HALFLING"]
-        if all_random == True:
-            chosen_race = get_item(subrace)
-        else:
-            chosen_race = ask_input(subrace)
+        race = ask_input(subrace)
         
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
+
+        raise_stat("DEXTERITY", 2)
 
         get_age(15, 25, 75, 150)
         get_size(8, 31, 8, 35)
-
-        get_random_alignment()
+        get_trait("SPEED", 25)
         
-        get_speed(25)
+        get_alignment("SKEW CHAOTIC", "SKEW GOOD")
+        
+        get_proficiency("HALFLING", languages)
+
+        if race == "LIGHTFOOT HALFLING":
+
+            raise_stat("CHARISMA", 1)
+
+            race_features.append("Can [Hide] when obscured by larger creature")
+            race_features.append("")
+            
+        if race == "STOUT HALFLING":
+
+            raise_stat("CONSTITUTION", 1)
+
+            race_features.append("ADV: Saving Throws v. Poison")
+            race_features.append("RES: Poison Damage")
+            race_features.append("")
         
         race_features.append("LUCKY: Reroll 1's on Attack / Ability / Saves")
         race_features.append("ADV: Saving Throws v. Frightened")
         race_features.append("")
         race_features.append("NIMBLE: Move through space occupied by larger creature")
         race_features.append("")
-        
-        ability_scores["DEXTERITY"] += 2
 
-        get_proficiency("HALFLING", languages)
+    if race == "DRAGONBORN":
 
-        if chosen_race == "LIGHTFOOT HALFLING":
-
-            ability_scores["CHARISMA"] += 1
-
-            race_features.append("Can [Hide] when obscured by larger creature")
-            race_features.append("")
-            
-        if chosen_race == "STOUT HALFLING":
-
-            ability_scores["CONSTITUTION"] += 1
-
-            race_features.append("ADV: Saving Throws v. Poison")
-            race_features.append("RES: Poison Damage")
-            race_features.append("")
-
-    if chosen_race == "DRAGONBORN":
-
-        subrace = [
+        ancestry = [
                         "BLACK",
                         "BLUE",
                         "BRASS",
@@ -1704,27 +1699,23 @@ def get_race():
                         "SILVER",
                         "WHITE"
                         ]
-        if all_random == True:
-            subrace = get_item(subrace)
-        else:
-            subrace = ask_input(subrace)
-        chosen_race = "{0} DRAGONBORN".format(subrace)
+        ancestry = ask_input(ancestry)
+        race = "{0} DRAGONBORN".format(ancestry)
         
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
+
+        raise_stat("STRENGTH", 2)
+        raise_stat("CHARISMA", 1)
+        update_mods()
 
         get_age(10, 20, 40, 50)
         get_size(16, 66, 12, 175)
+        get_trait("SPEED", 30)
 
-        get_random_alignment()
+        get_alignment("SKEW NEUTRAL", "RANDOM")
         
         get_proficiency("DRACONIC", languages)
-
-        ability_scores["STRENGTH"] += 2
-        ability_scores["CHARISMA"] += 1
-        update_mods()
-
-        get_speed(30)
         
         breath_save_DC = ability_modifiers["CONSTITUTION"] + 10
         breath_save = {
@@ -1765,41 +1756,38 @@ def get_race():
                         }
         
         race_features.append("BREATH WEAPON (1/LR): 2d6 dmg; DC {0} (8+CON+Prof) for 1/2".format(breath_save_DC))
-        race_features.append("BREATH WEAPON EFFECT: {0} {1} Damage ({2} Save)".format(breath_effect[subrace], breath_damage[subrace], breath_save[subrace]))
+        race_features.append("BREATH WEAPON EFFECT: {0} {1} Damage ({2} Save)".format(breath_effect[ancestry], breath_damage[ancestry], breath_save[ancestry]))
         race_features.append("")
-        race_features.append("RES: {0} Damage".format(breath_damage[subrace]))
+        race_features.append("RES: {0} Damage".format(breath_damage[ancestry]))
         race_features.append("")
         
-    if chosen_race == "GNOME":
+    if race == "GNOME":
 
         subrace = ["FOREST GNOME", "ROCK GNOME", "DEEP GNOME"]
-        if all_random == True:
-            chosen_race = get_item(subrace)
-        else:
-            chosen_race = ask_input(subrace)
+        race = ask_input(subrace)
         
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(20, 40, 140, 200)
         get_size(8, 35, 8, 35)
         
-        ability_scores["INTELLIGENCE"] += 2
+        raise_stat("INTELLIGENCE", 2)
 
         get_proficiency("GNOMISH", languages)
 
-        get_speed(25)
+        get_trait("SPEED", 25)
         
         race_features.append("ADV: INT/WIS/CHA Saves v. Magic")
         race_features.append("")
         
-        if chosen_race == "FOREST GNOME":
+        if race == "FOREST GNOME":
 
-            get_random_alignment()
+            get_alignment("SKEW CHAOTIC", "SKEW GOOD")
             
-            get_darkvision(60)
+            get_trait("DARKVISION", 60)
             
-            ability_scores["DEXTERITY"] += 1
+            raise_stat("DEXTERITY", 1)
 
             spellbook_0.append("MINOR ILLUSION (Gnome)")
 
@@ -1808,13 +1796,13 @@ def get_race():
             race_features.append("Can communicate simple ideas with Small or smaller beasts")
             race_features.append("")
             
-        if chosen_race == "ROCK GNOME":
+        if race == "ROCK GNOME":
 
-            get_random_alignment()
+            get_alignment("SKEW NEUTRAL", "SKEW GOOD")
             
-            get_darkvision(60)
+            get_trait("DARKVISION", 60)
             
-            ability_scores["CONSTITUTION"] += 1
+            raise_stat("CONSTITUTION", 1)
 
             get_proficiency("TINKER'S TOOLS", tools)
             
@@ -1826,11 +1814,11 @@ def get_race():
             race_features.append("          : Music Box: single song, moderate volume")
             race_features.append("")
             
-        if chosen_race == "DEEP GNOME":
+        if race == "DEEP GNOME":
 
-            get_underdark_alignment()
+            get_alignment("SKEW NEUTRAL", "SKEW EVIL")
             
-            get_darkvision(120)
+            get_trait("DARKVISION", 120)
             
             ability_scores[("DEXTERITY")] += 1
 
@@ -1839,78 +1827,71 @@ def get_race():
             
             get_proficiency("UNDERCOMMON", languages)
 
-    if chosen_race == "HALF-ELF":
+    if race == "HALF-ELF":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(15, 25, 70, 100)
         get_size(16, 57, 8, 110)
 
-        get_random_alignment()
+        get_alignment("RANDOM", "RANDOM")
         
-        ability_scores["CHARISMA"] += 2
-        avail_attributes.remove("CHARISMA")
+        raise_stat("CHARISMA", 2)
+        raise_stat("ANY", 1)
+        raise_stat("ANY", 1)
         
-        halfelf_stat_1 = raise_stat_by(1)
-        halfelf_stat_2 = raise_stat_by(1)
-        
-        avail_attributes.append("CHARISMA")
-        avail_attributes.append(halfelf_stat_1)
-        avail_attributes.append(halfelf_stat_2)
-
         get_proficiency("ELVEN", languages)
-        get_proficiency("GET", languages)
+        get_proficiency("ANY", languages)
 
-        get_speed(30)
-        get_darkvision(60)
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
 
         race_features.append("ADV: Saving Throws v. Charm")
         race_features.append("IMMUNE: Magical Sleep")
         race_features.append("")
 
-    if chosen_race == "HALF-ORC":
+    if race == "HALF-ORC":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(10, 15, 35, 45)
         get_size(20, 58, 12, 140)
 
-        get_random_alignment()
+        get_alignment("SKEW NEUTRAL", "RANDOM")
         
-        ability_scores["STRENGTH"] += 2
-        ability_scores["CONSTITUTION"] += 1
-
+        raise_stat("STRENGTH", 2)
+        raise_stat("CONSTITUTION", 1)
+        
         get_proficiency("ORC", languages)
+        get_proficiency("INTIMIDATION", avail_skills)
 
-        skill_modifiers["INTIMIDATION"] += 2
-
-        get_speed(30)
-        get_darkvision(60)
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
 
         race_features.append("When reduced to 0 HP but not killed, drop to 1 HP instead (1/LR)")
         race_features.append("")
         race_features.append("On a critical hit with a melee weapon, add 1 damage die to roll")
         race_features.append("")
 
-    if chosen_race == "TIEFLING":
+    if race == "TIEFLING":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(15, 25, 60, 75)
         get_size(16, 57, 8, 110)
 
-        get_random_alignment()
+        get_alignment("SKEW LAWFUL", "RANDOM")
         
-        ability_scores["CHARISMA"] += 2
-        ability_scores["INTELLIGENCE"] += 1
+        raise_stat("CHARISMA", 2)
+        raise_stat("INTELLIGENCE", 1)
 
         get_proficiency("INFERNAL", languages)
 
-        get_speed(30)
-        get_darkvision(60)
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
 
         race_features.append("RES: Fire Damage")
         race_features.append("Gain 'Thaumaturgy' Cantrip")
@@ -1918,20 +1899,20 @@ def get_race():
 
         spellbook_0.append("THAUMATURGY (Tiefling)")
 
-    if chosen_race == "AARAKOCRA":
+    if race == "AARAKOCRA":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(2, 5, 20, 25)
         get_size(12, 54, 22, 78)
 
-        get_random_alignment()
+        get_alignment("SKEW NEUTRAL", "SKEW NEUTRAL")
         
-        ability_scores["DEXTERITY"] += 2
-        ability_scores["WISDOM"] += 1
+        raise_stat("DEXTERITY", 2)
+        raise_stat("WISDOM", 1)
 
-        get_speed(25)
+        get_trait("SPEED", 25)
 
         race_features.append("FLY SPEED: 50ft (No Medium or Heavy Armor)")
         race_features.append("")
@@ -1942,30 +1923,27 @@ def get_race():
         get_proficiency("AARAKOCRAN", languages)
         get_proficiency("AURAN", languages)
 
-    if chosen_race == "GENASI":
+    if race == "GENASI":
 
         subrace = ["FIRE GENASI", "EARTH GENASI", "WATER GENASI", "AIR GENASI"]
-        if all_random == True:
-            chosen_race = get_item(subrace)
-        else:
-            chosen_race = ask_input(subrace)
+        race = ask_input(subrace)
         
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(15, 25, 60, 80)
         get_size(20, 56, 8, 110)
 
-        get_random_alignment()
-        
         ability_scores[("CONSTITUTION")] += 2
 
-        get_speed(30)
+        get_trait("SPEED", 30)
         
         get_proficiency("PRIMORDIAL", languages)
 
-        if chosen_race == "AIR GENASI":
+        if race == "AIR GENASI":
 
+            get_alignment("SKEW CHAOTIC", "RANDOM")
+            
             ability_scores[("DEXTERITY")] += 1
 
             race_features.append("You can hold your breath indefinitely.")
@@ -1973,20 +1951,24 @@ def get_race():
             race_features.append("1/LR: Cast LEVITATE (CON Spell Ability)")
             race_features.append("")
             
-        if chosen_race == "EARTH GENASI":
+        if race == "EARTH GENASI":
 
-            ability_scores["STRENGTH"] += 1
+            get_alignment("SKEW NEUTRAL", "RANDOM")
+            
+            raise_stat("STRENGTH", 1)
 
             race_features.append("You move across natural difficult terrain as normal.")
             race_features.append("")
             race_features.append("1/LR: Cast PASS WITHOUT TRACE")
             race_features.append("")
             
-        if chosen_race == "FIRE GENASI":
+        if race == "FIRE GENASI":
 
+            get_alignment("SKEW CHAOTIC", "RANDOM")
+            
             ability_scores[("INTELLIGENCE")] += 1
 
-            get_darkvision(60)
+            get_trait("DARKVISION", 60)
 
             race_features.append("RES: Fire Damage")
             race_features.append("")
@@ -1995,8 +1977,10 @@ def get_race():
             
             spellbook_0.append("PRODUCE FLAME (Genasi)")
         
-        if chosen_race == "WATER GENASI":
+        if race == "WATER GENASI":
 
+            get_alignment("SKEW NEUTRAL", "RANDOM")
+            
             ability_scores[("WISDOM")] += 1
 
             race_features.append("SWIM SPEED: 30ft")
@@ -2011,23 +1995,23 @@ def get_race():
 
             spellbook_0.append("SHAPE WATER (Genasi)")
 
-    if chosen_race == "GOLIATH":
+    if race == "GOLIATH":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(15, 25, 45, 60)
         get_size(16, 82, 12, 235)
 
-        get_random_alignment()
+        get_alignment("SKEW LAWFUL", "RANDOM")
         
         ability_scores[("STRENGTH")] += 2
         ability_scores[("CONSTITUTION")] += 1
         update_mods()
 
-        skill_modifiers[("ATHLETICS")] += 2
+        get_skill("ATHLETICS", avail_skills)
 
-        get_speed(30)
+        get_trait("SPEED", 30)
         
         race_features.append("[R] (1/SR): When you take damage, reduce by 1d12+{0} (CON)".format(ability_modifiers["CONSTITUTION"]))
         race_features.append("")
@@ -2038,32 +2022,28 @@ def get_race():
             
         get_proficiency("GIANT", languages)
 
-    if chosen_race == "AASIMAR":
+    if race == "AASIMAR":
 
         subrace = ["PROTECTOR AASIMAR", "SCOURGE AASIMAR", "FALLEN AASIMAR"]
-        if all_random == True:
-            chosen_race = get_item(subrace)
-        else:
-            chosen_race = ask_input(subrace)
+        race = ask_input(subrace)
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
         
         get_age(15, 25, 80, 160)
         get_size(20, 56, 8, 110)
 
-        get_random_alignment()
-        
-        ability_scores["CHARISMA"] += 2
+        raise_stat("CHARISMA", 2)
         
         get_proficiency("CELESTIAL", languages)
 
-        get_speed(30)
-        get_darkvision(60)
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
         race_features.append("RES: Necrotic / Radiant Damage")
         race_features.append("1/LR: Touch creature, gains your level in HP")
         race_features.append("Gain 'Light' Cantrip")
         race_features.append("")
+        get_spell("LIGHT", wiz_spell_0, spellbook_0)
 
         angels = ["TADRIEL", "MYLLANDRA", "SERAPHINA", "GALLADIA", "MYKIEL", "VALANDRAS"]
         ang_guide = get_item(angels)
@@ -2083,16 +2063,19 @@ def get_race():
         race_features.append(ang_nature)
         race_features.append("")
 
-        spellbook_0.append("LIGHT (Aasimar)")
-
-        if chosen_race == "PROTECTOR AASIMAR":
-            ability_scores["WISDOM"] += 1
-        if chosen_race == "SCOURGE AASIMAR":
-            ability_scores["CONSTITUTION"] += 1
-        if chosen_race == "FALLEN AASIMAR":
+        if race == "PROTECTOR AASIMAR":
+            get_alignment("SKEW LAWFUL", "SKEW GOOD")
+            raise_stat("WISDOM", 1)
+        
+        if race == "SCOURGE AASIMAR":
+            get_alignment("SKEW CHAOTIC", "RANDOM")
+            raise_stat("CONSTITUTION", 1)
+        
+        if race == "FALLEN AASIMAR":
+            get_alignment("RANDOM", "SKEW EVIL")
             ability_scores["STRENGTH"]+= 1
     
-    if chosen_race == "FIRBOLG":
+    if race == "FIRBOLG":
 
         firbolg_origins = [
             "OUTCAST FOR MURDER",
@@ -2106,36 +2089,20 @@ def get_race():
             ]
         chosen_origin = get_item(firbolg_origins)
         
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
         race_features.append("ORIGIN: {0}".format(chosen_origin))
         race_features.append("")
 
-        ability_scores["WISDOM"] += 2
-        ability_scores["STRENGTH"] += 1
+        raise_stat("WISDOM", 2)
+        raise_stat("STRENGTH", 1)
 
         get_age(15, 30, 250, 400)
         get_size(24, 74, 12, 175)
 
-        roll_alignment = randint(1,100)
-        if roll_alignment < 75:
-            char_align = "NEUTRAL GOOD"
-        elif roll_alignment < 80:
-            char_align = "LAWFUL GOOD"
-        elif roll_alignment < 85:
-            char_align = "CHAOTIC GOOD"
-        elif roll_alignment < 90:
-            char_align = "LAWFUL NEUTRAL"
-        elif roll_alignment < 93:
-            char_align = "TRUE NEUTRAL"
-        elif roll_alignment < 96:
-            char_align = "CHAOTIC NEUTRAL"
-        else:
-            char_align = "NEUTRAL EVIL"
-        race_features.append(char_align)
-        race_features.append("")
-
-        get_speed(30)
+        get_alignment("SKEW NEUTRAL", "SKEW GOOD")
+        
+        get_trait("SPEED", 30)
         race_features.append("[B]: 1/SR Cast either 'Detect Magic' or 'Disguise Self'")
         race_features.append("     'Disguise Self' allows you to seem up to 3ft shorter,")
         race_features.append("     So as to blend in with Human-sized crowds")
@@ -2147,43 +2114,33 @@ def get_race():
         get_proficiency("ELVISH", languages)
         get_proficiency("GIANT", languages)
 
-    if chosen_race == "KENKU":
+    if race == "KENKU":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(12, 18, 30, 45)
         get_size(16, 52, 6, 50)
 
-        roll_alignment = randint(1,100)
-        if roll_alignment < 75:
-            char_align = "CHAOTIC NEUTRAL"
-        elif roll_alignment < 85:
-            char_align = "CHAOTIC GOOD"
-        elif roll_alignment < 95:
-            char_align = "NEUTRAL EVIL"
-        else:
-            char_align = "CHAOTIC EVIL"
-        race_features.append(char_align)
-        race_features.append("")
+        get_alignment("SKEW CHAOTIC", "SKEW NEUTRAL")
+        
+        raise_stat("DEXTERITY", 2)
+        raise_stat("WISDOM", 1)
 
-        ability_scores["DEXTERITY"] += 2
-        ability_scores["WISDOM"] += 1
-
-        get_speed(30)
+        get_trait("SPEED", 30)
         race_features.append("ADV: Checks to create forgeries or duplicates")
         race_features.append("MIMICRY: Recreate any sound you have heard, including voices")
         race_features.append("         Insight Check v. your Deception Check to identify imitation")
         race_features.append("         This is a kenku's only form of speech")
 
         kenku_skills = ["ACROBATICS", "DECEPTION", "STEALTH", "SLEIGHT OF HAND"]
-        get_skill(kenku_skills)
-        get_skill(kenku_skills)
+        for i in range(2):
+            get_skill("ANY", kenku_skills)
         get_proficiency("AURAN", languages)
 
-    if chosen_race == "LIZARDFOLK":
+    if race == "LIZARDFOLK":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(14, 20, 30, 45)
@@ -2203,25 +2160,13 @@ def get_race():
         race_features.append("LIZARDFOLK QUIRK: {0}".format(liz_quirk))
         race_features.append("")
 
-        ability_scores["CONSTITUTION"] += 2
-        ability_scores["WISDOM"] += 1
+        raise_stat("CONSTITUTION", 2)
+        raise_stat("WISDOM", 1)
         update_mods()
 
-        roll_alignment = randint(1,100)
-        if roll_alignment < 80:
-            char_align = "TRUE NEUTRAL"
-        elif roll_alignment < 85:
-            char_align = "LAWFUL NEUTRAL"
-        elif roll_alignment < 90:
-            char_align = "CHAOTIC NEUTRAL"
-        elif roll_alignment < 95:
-            char_align = "NEUTRAL GOOD"
-        else:
-            char_align = "NEUTRAL EVIL"
-        race_features.append(char_align)
-        race_features.append("")
-
-        get_speed(30)
+        get_alignment("SKEW NEUTRAL", "SKEW NEUTRAL")
+        
+        get_trait("SPEED", 30)
         race_features.append("BITE: Unarmed Strike: 1d6+{0} Piercing (STR)".format(ability_modifiers["STRENGTH"]))
         race_features.append("      1/SR: [B] Make Bite attack, gain {0} Temp HP (CON)".format(ability_modifiers["CONSTITUTION"]))
         race_features.append("NATURAL ARMOR: AC = {0} (13+DEX) without armor on".format(ability_modifiers["DEXTERITY"] + 13))
@@ -2230,17 +2175,24 @@ def get_race():
 
         lizfolk_skills = ["ANIMAL HANDLING", "NATURE", "PERCEPTION", "STEALTH", "SURVIVAL"]
         for i in range(2):
-            get_skill(lizfolk_skills)
+            get_skill("ANY", lizfolk_skills)
     
         get_proficiency("DRACONIC", languages)        
 
-    if chosen_race == "TABAXI":
+    if race == "TABAXI":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
+        
+        raise_stat("DEXTERITY", 2)
+        raise_stat("CHARISMA", 1)
+        update_mods()
 
+        get_alignment("SKEW CHAOTIC", "SKEW NEUTRAL")
         get_age(15, 25, 35, 45)
         get_size(20, 58, 8, 90)
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
 
         tabaxi_obsessions = [
             "A GOD / PLANAR ENTITY",
@@ -2253,8 +2205,6 @@ def get_race():
             "A LEGEND / TALE"
             ]
         obsession = get_item(tabaxi_obsessions)
-        obsession = "TABAXI OBSESSION: {0}".format(obsession)
-        
         tabaxi_quirks = [
             "You complain endlessly about how you miss your tropical homeland.",
             "You never wear the same outfit twice.",
@@ -2267,51 +2217,37 @@ def get_race():
             "You are a font of random bits of trivia and lore.",
             "You can't help but pocket random items you come across."
             ]
-        tab_quirk = get_item(tabaxi_quirks)
-        tab_quirk = "TABAXI QUIRK: {0}".format(tab_quirk)       
+        quirk = get_item(tabaxi_quirks)      
         
-        race_features.append(obsession)
-        race_features.append(tab_quirk)
+        race_features.append("OBSESSION: {0}".format(obsession))
+        race_features.append("QUIRK: {0}".format(quirk))
         race_features.append("")
-
-        ability_scores["DEXTERITY"] += 2
-        ability_scores["CHARISMA"] += 1
-        update_mods()
-
-        roll_alignment = randint(1,100)
-        if roll_alignment < 40:
-            char_align = "CHAOTIC NEUTRAL"
-        elif roll_alignment < 80:
-            char_align = "CHAOTIC GOOD"
-        elif roll_alignment < 90:
-            char_align = "NEUTRAL GOOD"
-        elif roll_alignment < 95:
-            char_align = "CHAOTIC EVIL"
-        else:
-            char_align = "NEUTRAL EVIL"
-        race_features.append(char_align)
-        race_features.append("")
-
-        get_speed(30)
-        race_features.append("DARKVISION: 60ft")
         race_features.append("Move 2x Speed: Must go 0ft in a round before re-using ability")
         race_features.append("CLIMBING SPEED: 20ft")
         race_features.append("CLAWS: Unarmed Strike: 1d4+{0} Slashing (STR)".format(ability_modifiers["STRENGTH"]))
 
-        skill_modifiers["PERCEPTION"] += 2
-        skill_modifiers["STEALTH"] += 2
+        get_proficiency("PERCEPTION", avail_skills)
+        get_proficiency("STEALTH", avail_skills)
+        get_proficiency("ANY", languages)
 
-        get_proficiency("GET", languages)
+    if race == "TRITON":
 
-    if chosen_race == "TRITON":
-
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
+        raise_stat("STRENGTH", 1)
+        raise_stat("CONSTITUTION", 1)
+        raise_stat("CHARISMA", 1)
+
+        get_alignment("SKEW LAWFUL", "SKEW GOOD")
         get_age(15, 30, 100, 160)
         get_size(20, 54, 8, 90)
+        get_trait("SPEED", 30)
+        get_trait("SWIM SPEED", 30)
+        get_proficiency("PRIMORDIAL", languages)
+        get_spell("FOG CLOUD", wiz_spell_1, spellbook_1)
 
-        triton_quirks = [
+        quirks = [
             "You don't make requests. You give orders.",
             "You boast often of the greatness of your people.",
             "You learned an antiquated version of Common.",
@@ -2319,42 +2255,16 @@ def get_race():
             "You are obsessed with cataloguing the entire surface world.",
             "You assume all surface dwellers know and fear Tritons."
             ]
-        tri_quirk = get_item(triton_quirks)
-        race_features.append("TRITON QUIRK: {0}".format(tri_quirk))
+        race_features.append("QUIRK: {0}".format(get_item(quirks)))
         race_features.append("")
-
-        ability_scores["STRENGTH"] += 1
-        ability_scores["CONSTITUTION"] += 1
-        ability_scores["CHARISMA"] += 1
-
-        roll_alignment = randint(1,100)
-        if roll_alignment < 75:
-            char_align = "LAWFUL GOOD"
-        elif roll_alignment < 85:
-            char_align = "NEUTRAL GOOD"
-        elif roll_alignment < 95:
-            char_align = "LAWFUL NEUTRAL"
-        elif roll_alignment < 98:
-            char_align = "CHAOTIC GOOD"
-        else:
-            char_align = "LAWFUL EVIL"
-        race_features.append(char_align)
-        race_features.append("")
-
-        get_speed(30)
-        race_features.append("SWIM SPEED: 30ft")
         race_features.append("AMPHIBIOUS: Breathe air and water")
         race_features.append("1/LR: Cast 'Fog Cloud' (CHA spellcasting)")
         race_features.append("Communicate simple ideas with water beasts")
         race_features.append("RES: Cold Damage")
-        
-        get_proficiency("PRIMORDIAL", languages)
 
-        spellbook_1.append("FOG CLOUD (Genasi)")
+    if race == "BUGBEAR":
 
-    if chosen_race == "BUGBEAR":
-
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(16, 23, 40, 65)
@@ -2362,25 +2272,13 @@ def get_race():
 
         get_monstrous_origin()
         
-        ability_scores["STRENGTH"] += 2
-        ability_scores["DEXTERITY"] += 1
+        raise_stat("STRENGTH", 2)
+        raise_stat("DEXTERITY", 1)
 
-        roll_alignment = randint(1,100)
-        if roll_alignment < 75:
-            char_align = "CHAOTIC EVIL"
-        elif roll_alignment < 85:
-            char_align = "NEUTRAL EVIL"
-        elif roll_alignment < 95:
-            char_align = "CHAOTIC NEUTRAL"
-        elif roll_alignment < 98:
-            char_align = "TRUE NEUTRAL"
-        else:
-            char_align = "CHAOTIC GOOD"
-        race_features.append(char_align)
-        race_features.append("")
+        get_alignment("SKEW CHAOTIC", "SKEW EVIL")
 
-        get_speed(30)
-        get_darkvision(60)
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
         
         race_features.append("LONG-LIMBED: +5ft reach to Melee attack on your turn")
         race_features.append("Count as one size larger for push/pull/drag thresholds")
@@ -2388,13 +2286,12 @@ def get_race():
         race_features.append("               : on first turn in combat. Usable 1/Combat")
         race_features.append("")
 
-        skill_modifiers["STEALTH"] += 2
-        
+        get_proficiency("STEALTH", avail_skills)
         get_proficiency("GOBLIN", languages)
 
-    if chosen_race == "GOBLIN":
+    if race == "GOBLIN":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(8, 15, 30, 45)
@@ -2402,31 +2299,20 @@ def get_race():
 
         get_monstrous_origin()
 
-        roll_alignment = randint(1,100)
-        if roll_alignment < 85:
-            char_align = "NEUTRAL EVIL"
-        elif roll_alignment < 90:
-            char_align = "TRUE NEUTRAL"
-        elif roll_alignment < 95:
-            char_align = "CHAOTIC EVIL"
-        elif roll_alignment < 98:
-            char_align = "CHAOTIC NEUTRAL"
-        else:
-            char_align = "NEUTRAL GOOD"
-        race_features.append(char_align)
-        race_features.append("")
+        get_alignment("SKEW NEUTRAL", "SKEW EVIL")
 
-        get_speed(30)
-        race_features.append("DARKVISION: 60ft")
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
+
         race_features.append("1/SR: On damaging creature larger than you,")
         race_features.append("      Deal extra damage equal to your level")
         race_features.append("[B]: Disengage / Hide")
 
         get_proficiency("GOBLIN", languages)
 
-    if chosen_race == "HOBGOBLIN":
+    if race == "HOBGOBLIN":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(15, 25, 45, 60)
@@ -2434,31 +2320,20 @@ def get_race():
 
         get_monstrous_origin()
 
-        ability_scores["CONSTITUTION"] += 2
-        ability_scores["INTELLIGENCE"] += 1
+        raise_stat("CONSTITUTION", 2)
+        raise_stat("INTELLIGENCE", 1)
 
-        roll_alignment = randint(1,100)
-        if roll_alignment < 85:
-            char_align = "LAWFUL EVIL"
-        elif roll_alignment < 90:
-            char_align = "LAWFUL NEUTRAL"
-        elif roll_alignment < 95:
-            char_align = "NEUTRAL EVIL"
-        elif roll_alignment < 98:
-            char_align = "TRUE NEUTRAL"
-        else:
-            char_align = "LAWFUL GOOD"
-        race_features.append(char_align)
-        race_features.append("")
+        get_alignment("SKEW LAWFUL", "SKEW EVIL")
 
-        get_speed(30)
-        race_features.append("DARKVISION: 60ft")
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
+
         race_features.append("1/SR: Gain bonus on failed attack/ability/save")
         race_features.append("      equal to allies seen w/in 30ft (max +5)")
 
-    if chosen_race == "KOBOLD":
+    if race == "KOBOLD":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(6, 20, 60, 90)
@@ -2466,25 +2341,14 @@ def get_race():
         
         get_monstrous_origin()
 
-        roll_alignment = randint(1,100)
-        if roll_alignment < 55:
-            char_align = "LAWFUL EVIL"
-        elif roll_alignment < 75:
-            char_align = "NEUTRAL EVIL"
-        elif roll_alignment < 95:
-            char_align = "LAWFUL NEUTRAL"
-        elif roll_alignment < 98:
-            char_align = "TRUE NEUTRAL"
-        else:
-            char_align = "LAWFUL GOOD"
-        race_features.append(char_align)
-        race_features.append("")
+        get_alignment("SKEW LAWFUL", "SKEW EVIL")
 
-        ability_scores["DEXTERITY"] += 2
-        ability_scores["STRENGTH"] += 1
+        raise_stat("DEXTERITY", 2)
+        raise_stat("STRENGTH", 1)
 
-        get_speed(30)
-        race_features.append("DARKVISION: 60ft")
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
+
         race_features.append("1/SR: Cower/Grovel/Beg to distract enemies,")
         race_features.append("    giving allies ADV v. enemies w/in 10ft of you")
         race_features.append("    until the end of your next turn")
@@ -2494,9 +2358,9 @@ def get_race():
 
         get_proficiency("DRACONIC", languages)
 
-    if chosen_race == "ORC":
+    if race == "ORC":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(12, 20, 30, 40)
@@ -2504,38 +2368,26 @@ def get_race():
 
         get_monstrous_origin()
 
-        roll_alignment = randint(1,100)
-        if roll_alignment < 65:
-            char_align = "CHAOTIC EVIL"
-        elif roll_alignment < 75:
-            char_align = "NEUTRAL EVIL"
-        elif roll_alignment < 95:
-            char_align = "CHAOTIC NEUTRAL"
-        elif roll_alignment < 98:
-            char_align = "TRUE NEUTRAL"
-        else:
-            char_align = "CHAOTIC GOOD"
-        race_features.append(char_align)
-        race_features.append("")
+        get_alignment("SKEW LAWFUL", "SKEW EVIL")
 
-        ability_scores["STRENGTH"] += 2
-        ability_scores["CONSTITUTION"] += 1
-        ability_scores["INTELLIGENCE"] += -2
+        raise_stat("STRENGTH", 2)
+        raise_stat("CONSTITUTION", 1)
+        raise_stat("INTELLIGENCE", -2)
+        
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
 
-        get_speed(30)
-        race_features.append("DARKVISION: 60ft")
         race_features.append("[B]: Move up to your speed towards an enemy")
         race_features.append("     you can see or hear, ending closer than starting")
         race_features.append("Count as one size larger for carry and push/pull/lift thresholds")
         race_features.append("")
 
-        skill_modifiers["INTIMIDATION"] += 2
-        
+        get_proficiency("INTIMIDATION", avail_skills)
         get_proficiency("ORC", languages)
 
-    if chosen_race == "YUAN-TI PUREBLOOD":
+    if race == "YUAN-TI PUREBLOOD":
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
         get_age(15, 25, 45, 60)
@@ -2543,22 +2395,10 @@ def get_race():
 
         get_monstrous_origin()
 
-        roll_alignment = randint(1,100)
-        if roll_alignment < 70:
-            char_align = "NEUTRAL EVIL"
-        elif roll_alignment < 90:
-            char_align = "TRUE NEUTRAL"
-        elif roll_alignment < 95:
-            char_align = "CHAOTIC NEUTRAL"
-        elif roll_alignment < 98:
-            char_align = "CHAOTIC EVIL"
-        else:
-            char_align = "CHAOTIC GOOD"
-        race_features.append(char_align)
-        race_features.append("")
+        get_alignment("SKEW NEUTRAL", "SKEW EVIL")
 
-        get_speed(30)
-        get_darkvision(60)
+        get_trait("SPEED", 30)
+        get_trait("DARKVISION", 60)
 
         race_features.append("Gain 'Poison Spray' Cantrip (CHA Spellcasting)")
         race_features.append("ADV: Save v. Spells / Magical effects")
@@ -2569,96 +2409,68 @@ def get_race():
 
         spellbook_0.append("Poison Spray (Yuan-Ti)")
 
-    if chosen_race == "GITH":
-
-        def get_githyanki_align():
-
-            roll_alignment = randint(1,100)
-            if roll_alignment < 40:
-                char_align = "LAWFUL EVIL"
-            if roll_alignment < 60:
-                char_align = "LAWFUL NEUTRAL"
-            elif roll_alignment < 80:
-                char_align = "NEUTRAL EVIL"
-            elif roll_alignment < 90:
-                char_align = "CHAOTIC NEUTRAL"
-            else:
-                char_align = "CHAOTIC EVIL"
-            race_features.append(char_align)
-            race_features.append("")
-        def get_githzerai_align():
-
-            roll_alignment = randint(1,100)
-            if roll_alignment < 40:
-                char_align = "LAWFUL NEUTRAL"
-            if roll_alignment < 60:
-                char_align = "TRUE NEUTRAL"
-            elif roll_alignment < 80:
-                char_align = "NEUTRAL GOOD"
-            elif roll_alignment < 90:
-                char_align = "LAWFUL GOOD"
-            else:
-                char_align = "CHAOTIC GOOD"
-            race_features.append(char_align)
-            race_features.append("")
+    if race == "GITH":
 
         subrace = ["GITHYANKI", "GITHZERAI"]
-        if all_random == True:
-            chosen_race = get_item(subrace)
-        else:
-            chosen_race = ask_input(subrace)
+        race = ask_input(subrace)
 
-        race_features.append(chosen_race)
+        race_features.append(race)
         race_features.append("")
 
-        ability_scores["INTELLIGENCE"] += 1
+        raise_stat("INTELLIGENCE", 1)
 
         get_age(15, 25, 45, 60)
-        get_speed(30)
+        get_trait("SPEED", 30)
         get_proficiency("GITH", languages)
 
         race_features.append("PSIONICS: You know the Mage Hand cantrip, and the")
         race_features.append("        : hand is invisible to you when you cast it.")
+        race_features.append("")
+        get_spell("MAGE HAND", wiz_spell_0, spellbook_0)
         
-        if chosen_race == "GITHYANKI":
+        if race == "GITHYANKI":
             
-            ability_scores["STRENGTH"] += 2
+            raise_stat("STRENGTH", 2)
             
-            get_githyanki_align()
+            get_alignment("SKEW LAWFUL", "SKEW EVIL")
             get_size(24, 60, 8, 100)
             
             skill_or_tool = randint(1,2)
             if skill_or_tool == 1:
-                get_proficiency("GET", avail_skills)
+                get_proficiency("ANY", avail_skills)
             else:
-                get_proficiency("GET", tools)
+                get_proficiency("ANY", tools)
             
-            get_proficiency("GET", languages)
+            get_proficiency("ANY", languages)
             get_proficiency("LIGHT", armor)
             get_proficiency("MEDIUM", armor)
             get_proficiency("SHORT SWORD", martial_wpns)
             get_proficiency("LONGSWORD", martial_wpns)
             get_proficiency("GREATSWORD", martial_wpns)
         
-        if chosen_race == "GITHZERAI":
+        if race == "GITHZERAI":
+                        
+            raise_stat("WISDOM", 2)
             
-            ability_scores["WISDOM"] += 2
-            
-            get_githzerai_align()
+            get_alignment("SKEW LAWFUL", "SKEW NEUTRAL")
             get_size(24, 59, 4, 90)
             
             race_features.append("ADV: Saves v. Charmed / Frightened condition")
+            race_features.append("")
 
-    if chosen_race == "CENTAUR":
+    if race == "CENTAUR":
         
-        ability_scores["STRENGTH"] += 2
+        race_features.append(race)
+        race_features.append("")
+        
+        raise_stat("STRENGTH", 2)
         ability_scores["WISDOM"] +=1
         update_mods()
 
-        get_random_alignment()
+        get_alignment("RANDOM", "SKEW NEUTRAL")
         get_age(15, 25, 45, 60)
         get_size(10, 72, 24, 600)
-        get_speed(40)
+        get_trait("SPEED", 40)
 
         race_features.append("Your creature type is Fey")
         race_features.append("")
@@ -2671,20 +2483,23 @@ def get_race():
         race_features.append("")
 
         centaur_skills = ["ANIMAL HANDLING", "NATURE", "MEDICINE", "SURVIVAL"]
-        get_proficiency("GET", centaur_skills)
+        get_proficiency("ANY", centaur_skills)
         get_proficiency("SYLVAN", languages)
 
-    if chosen_race == "LEONIN":
+    if race == "LEONIN":
 
-        ability_scores["CONSTITUTION"] += 2
+        race_features.append(race)
+        race_features.append("")
+        
+        raise_stat("CONSTITUTION", 2)
         ability_scores["STRENGTH"] +=1
         update_mods()
 
-        get_random_alignment()
+        get_alignment("SKEW LAWFUL", "SKEW GOOD")
         get_age(15, 25, 45, 60)
         get_size(20, 66, 12, 180)
-        get_speed(35)
-        get_darkvision(60)
+        get_trait("SPEED", 35)
+        get_trait("DARKVISION", 60)
 
         race_features.append("Your creature type is Fey")
         race_features.append("")
@@ -2695,19 +2510,22 @@ def get_race():
         race_features.append("")
 
         leonin_skills = ["ATHLETICS", "INITIMIDATION", "PERCEPTION", "SURVIVAL"]
-        get_proficiency("GET", leonin_skills)
+        get_proficiency("ANY", leonin_skills)
         get_proficiency("LEONIN", languages)
 
-    if chosen_race == "MINOTAUR":
+    if race == "MINOTAUR":
 
-        ability_scores["STRENGTH"] += 2
+        race_features.append(race)
+        race_features.append("")
+        
+        raise_stat("STRENGTH", 2)
         ability_scores["CONSTITUTION"] +=1
         update_mods()
 
-        get_random_alignment()
+        get_alignment("RANDOM", "RANDOM")
         get_age(15, 25, 45, 60)
         get_size(16, 64, 12, 175)
-        get_speed(30)
+        get_trait("SPEED", 30)
         
         race_features.append(" RUSH: If you [Dash] and move at least 20ft")
         race_features.append("     : you may make a [Bonus] attack with your horns")
@@ -2720,19 +2538,22 @@ def get_race():
         race_features.append("")
 
         minotaur_skills = ["INITIMIDATION", "PERSUASION"]
-        get_proficiency("GET", minotaur_skills)
+        get_proficiency("ANY", minotaur_skills)
         get_proficiency("MINOTAUR", languages)
 
-    if chosen_race == "SATYR":
+    if race == "SATYR":
 
-        ability_scores["CHARISMA"] += 2
+        race_features.append(race)
+        race_features.append("")
+        
+        raise_stat("CHARISMA", 2)
         ability_scores["DEXTERITY"] +=1
         update_mods()
 
-        get_random_alignment()
+        get_alignment("SKEW CHAOTIC", "SKEW GOOD")
         get_age(15, 25, 45, 60)
         get_size(16, 56, 8, 100)
-        get_speed(35)
+        get_trait("SPEED", 35)
         
         race_features.append("Your creature type is Fey")
         race_features.append("ADV: Saving throws v. Spells and other Magic effects")
@@ -2744,16 +2565,18 @@ def get_race():
 
         get_proficiency("PERFORMANCE", avail_skills)
         get_proficiency("PERSUASION", avail_skills)
-        get_proficiency("GET", instruments)
+        get_proficiency("ANY", instruments)
         get_proficiency("SYLVAN", languages)
 
-    print(chosen_race)
+    get_feat()
+
+    print(race)
     sleep(1)
 
 get_race()
 print ()
 
-update_mods() # based on racial ability score changes
+print_ability_scores()
 
 #####                #####
 ###        CLASS       ###
@@ -2858,31 +2681,7 @@ def get_class():
         for item in inv_list:
             inventory.append(item)
 
-    if ability_scores["STRENGTH"] < 10 and ability_scores["DEXTERITY"] < 10:
-        clss.remove("FIGHTER")
-    if ability_scores["STRENGTH"] < 10 and ability_scores["CONSTITUTION"] < 10:
-        clss.remove("BARBARIAN")
-    if ability_scores["STRENGTH"] < 10 and ability_scores["CHARISMA"] < 10:
-        clss.remove("PALADIN")
-    if ability_scores["DEXTERITY"] < 10:
-        clss.remove("MONK")
-        clss.remove("ROGUE")
-    if ability_scores["DEXTERITY"] < 10 and ability_scores["WISDOM"] < 10:
-        clss.remove("RANGER")
-    if ability_scores["INTELLIGENCE"] < 10:
-        clss.remove("WIZARD")
-    if ability_scores["WISDOM"] < 10:
-        clss.remove("CLERIC")
-        clss.remove("DRUID")
-    if ability_scores["CHARISMA"] < 10:
-        clss.remove("BARD")
-        clss.remove("SORCERER")
-        clss.remove("WARLOCK")
-
-    if all_random == True:
-            chosen_class = get_item(clss)
-    else:
-        chosen_class = ask_input(clss)
+    chosen_class = ask_input(clss)
 
     if chosen_class == "BARBARIAN":
 
@@ -2915,7 +2714,7 @@ def get_class():
                     "SURVIVAL"
                     ]
         for i in range(2):
-            get_skill(barb_skills)
+            get_skill("ANY", barb_skills)
 
         choose_inventory("GREATAXE", "MARTIAL WEAPON")
         choose_inventory("HANDAXE (x2)", "SIMPLE WEAPON")
@@ -2965,7 +2764,7 @@ def get_class():
                     "PERSUASION"
                     ]
         for i in range(3):
-            get_skill(bard_skills)
+            get_skill("ANY", bard_skills)
 
         choose_inventory("RAPIER/LONGSWORD", "SIMPLE WEAPON")
         choose_inventory("DIPLOMAT'S PACK", "ENTERTAINER'S PACK")
@@ -2973,9 +2772,9 @@ def get_class():
         add_inventory(["LEATHER ARMOR", "DAGGER"])
         
         for i in range(2):
-            get_spell("GET", bard_spell_0, spellbook_0)
+            get_spell("ANY", bard_spell_0, spellbook_0)
         for i in range(4):
-            get_spell("GET", bard_spell_1, spellbook_1)
+            get_spell("ANY", bard_spell_1, spellbook_1)
 
     if chosen_class == "CLERIC":
 
@@ -3004,10 +2803,7 @@ def get_class():
                     "WAR",
                     "ARCANA"
                     ]
-        if all_random == True:
-            chosen_domain = get_item(domain)
-        else:
-            chosen_domain = ask_input(domain)
+        chosen_domain = ask_input(domain)
         chosen_class = "CLERIC, {0} DOMAIN".format(chosen_domain)
         
         class_features.append(chosen_class)
@@ -3043,7 +2839,7 @@ def get_class():
                         "PERFORMANCE"
                         ]
         for i in range(2):
-            get_skill(cleric_skills)
+            get_skill("ANY", cleric_skills)
 
         choose_inventory("MACE", "WARHAMMER")
         choose_inventory("LEATHER ARMOR", "SCALE/CHAIN")
@@ -3051,18 +2847,18 @@ def get_class():
         add_inventory(["SHIELD", "HOLY SYMBOL"])
 
         for i in range(3):
-            get_spell("GET", cleric_spell_0, spellbook_0)
+            get_spell("ANY", cleric_spell_0, spellbook_0)
 
         for i in range(spells_prepared):
-            get_spell("GET", cleric_spell_1, spellbook_1)
+            get_spell("ANY", cleric_spell_1, spellbook_1)
         
 
         if chosen_domain == "KNOWLEDGE":
 
             get_domain_spells("COMMAND", "IDENTIFY")
 
-            get_proficiency("GET", languages)
-            get_proficiency("GET", languages)
+            get_proficiency("ANY", languages)
+            get_proficiency("ANY", languages)
 
             domain_skills = [
                         "HISTORY",
@@ -3095,7 +2891,7 @@ def get_class():
             
         if chosen_domain == "NATURE":
 
-            get_spell("GET", druid_spell_0, spellbook_0)
+            get_spell("ANY", druid_spell_0, spellbook_0)
             druid_cantrip = spellbook_0[(len(spellbook_0)-1)]
 
             get_domain_spells("ANIMAL FRIENDSHIP", "SPEAK WITH ANIMALS")
@@ -3147,10 +2943,10 @@ def get_class():
             
             get_domain_spells("MAGIC MISSILE", "DETECT MAGIC")
             
-            get_spell("GET", wiz_spell_0, spellbook_0)
+            get_spell("ANY", wiz_spell_0, spellbook_0)
             domain_cantrip_1 = spellbook_0[(len(spellbook_0)-1)]
             
-            get_spell("GET", wiz_spell_0, spellbook_0)
+            get_spell("ANY", wiz_spell_0, spellbook_0)
             domain_cantrip_2 = spellbook_0[(len(spellbook_0)-1)]
 
             class_features.append("Gain Prof: INT(Arcana) Checks")
@@ -3162,16 +2958,13 @@ def get_class():
 
     if chosen_class == "DRUID":
 
-        spellbook_1.remove("LEVEL 1 SPELLS:")
-        spellbook_1.append("LEVEL 1 SPELLS PREPARED:")
-        
         class_features.append(chosen_class)
         class_features.append("")
 
         get_hit_points(8)
 
         get_spellcasting("WISDOM", "2")
-
+        
         spells_prepared = ability_modifiers[("WISDOM")] + 1           
         if spells_prepared < 1:                         
             spells_prepared = 1                         
@@ -3183,30 +2976,22 @@ def get_class():
         class_features.append("")
         class_features.append("A Druid will not wear armor or wield a shield made of metal")
         class_features.append("")
-            
-        get_spell("GET", druid_spell_0, spellbook_0)    
-        get_spell("GET", druid_spell_0, spellbook_0)    
-                                                        
-        for i in range(spells_prepared):
-            get_spell("GET", druid_spell_1, spellbook_1)                    
 
+        spellbook_1[0] = "LEVEL 1 SPELLS PREPARED:"    
+        for i in range(2):    
+            get_spell("ANY", druid_spell_0, spellbook_0)    
+        for i in range(spells_prepared):
+            get_spell("ANY", druid_spell_1, spellbook_1)                    
+
+        for ability in ["INTELLIGENCE", "WISDOM"]:
+            get_proficiency(ability, saves)
+        for weapon in ["CLUB","DAGGER","DART","JAVELIN","MACE","QUARTERSTAFF","SCIMITAR","SICKLE","SLING","SPEAR"]:
+            get_proficiency(weapon, simple_wpns)
+        for armor in ["LIGHT","MEDIUM","SHIELDS"]
+            get_proficiency(armor, armor)
         get_proficiency("HERBALISM KIT", tools)
         get_proficiency("DRUIDIC", languages)
-        get_proficiency("CLUB", simple_wpns)
-        get_proficiency("DAGGER", simple_wpns)
-        get_proficiency("DART", simple_wpns)
-        get_proficiency("JAVELIN", simple_wpns)
-        get_proficiency("MACE", simple_wpns)
-        get_proficiency("QUARTERSTAFF", simple_wpns)
-        get_proficiency("SCIMITAR", simple_wpns)
-        get_proficiency("SICKLE", simple_wpns)
-        get_proficiency("SLING", simple_wpns)
-        get_proficiency("SPEAR", simple_wpns)
-        get_proficiency("MEDIUM", armor)
-        get_proficiency("SHIELDS", armor)
-        get_proficiency("INTELLIGENCE", saves)
-        get_proficiency("WISDOM", saves)
-
+        
         druid_skills = [
                     "ARCANA",
                     "DECEPTION",
@@ -3217,8 +3002,8 @@ def get_class():
                     "PERFORMANCE",
                     "SURVIVAL"
                     ]
-        get_skill(druid_skills)
-        get_skill(druid_skills)
+        for i in range(2):
+            get_skill("ANY", druid_skills)
 
         choose_inventory("WOODEN SHIELD", "SIMPLE WEAPON")
         choose_inventory("SCIMITAR", "SIMPLE MELEE")
@@ -3234,22 +3019,33 @@ def get_class():
                     "SHIELD MASTER",
                     "DUAL-WIELDER",
                     ]
-        if all_random == True:
-            chosen_style = get_item(fighting_style)
-        else:
-            chosen_style = ask_input(fighting_style)
+        style_description = {
+                    "ARCHER" : "+2 to Attack Rolls with Ranged Weapons",
+                    "DEFENDER" : "+1 to AC while wearing Armor",
+                    "DUELIST" : "+2 Damage rolls while wielding a single Melee Weapon",
+                    "GREAT WEAPONS" : "Re-roll 1 or 2 on damage dice when wielding with two hands",
+                    "SHIELD MASTER" : "Reaction (w/Shield): Give Disadv: Attack targeting adjacent ally",
+                    "DUAL-WIELDER" : "Add Ability Modifier to Damage roll of Off-hand Attack",
+                    }
+        style = ask_input(fighting_style)
         
-        class_features.append("FIGHTER ({0})".format(chosen_style))
+        class_features.append("FIGHTER ({0})".format(style))
         class_features.append("")
 
         get_hit_points(10)
 
-        get_proficiency("ALL", armor)
-        get_proficiency("SHIELDS", armor)
-        get_proficiency("MARTIAL", martial_wpns)
-        get_proficiency("STRENGTH", saves)
-        get_proficiency("CONSTITUTION", saves)
-
+        class_features.append("SECOND WIND: (1/SR) Bonus Action to Heal 1d10 +Lvl HP")
+        class_features.append("")
+        class_features.append("{0} : {1}".format(style, style_description[style]))
+        class_features.append("")
+        
+        for ability in ["STRENGTH", "CONSTITUTION"]:
+            get_proficiency(ability, saves)
+        for armor in ["ALL","SHIELDS"]
+            get_proficiency(armor, armor)
+        for weapons in ["SIMPLE", "MARTIAL"]:
+            get_proficiency(weapon, martial_wpns)
+                    
         fighter_skills = [
                     "ACROBATICS",
                     "ANIMAL HANDLING",
@@ -3260,30 +3056,13 @@ def get_class():
                     "PERCEPTION",
                     "SURVIVAL"
                     ]
-        get_skill(fighter_skills)
-        get_skill(fighter_skills)
+        for i in range(2):
+            get_skill("ANY", fighter_skills)
 
         choose_inventory("CHAIN MAIL", "LEATHER/LONGBOW")
         choose_inventory("MARTIAL & SHIELD", "TWO MARTIAL WEAPONS")
         choose_inventory("LIGHT XBOW", "TWO HANDAXES")
         choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
-
-        class_features.append("SECOND WIND: (1/SR) Bonus Action to Heal 1d10 +Lvl HP")
-        class_features.append("")
-            
-        if chosen_style == "ARCHER":
-            class_features.append("ARCHERY: +2 to Attack Rolls with Ranged Weapons")
-        if chosen_style == "DEFENDER":
-            class_features.append("DEFENSE: +1 to AC while wearing Armor")
-        if chosen_style == "DUELIST":
-            class_features.append("DUELING: +2 Damage rolls with single Melee Weapon")
-        if chosen_style == "GREAT WEAPONS":
-            class_features.append("GREAT WEAPON: Re-roll 1 or 2 on damage dice when wielding with two hands")
-        if chosen_style == "SHIELD MASTER":
-            class_features.append("PROTECTION: Reaction (w/Shield): Give Disadv: Attack targeting adjacent ally")
-        if chosen_style == "DUAL-WIELDER":
-            class_features.append("TWO-WEAPON: Add Ability Modifier to Damage roll of Off-hand Attack")
-        class_features.append("")
             
     if chosen_class == "MONK":
 
@@ -3302,14 +3081,14 @@ def get_class():
             
         tool_or_inst = randint(1,2)
         if tool_or_inst == 1:
-            get_proficiency("GET", tools)
+            get_proficiency("ANY", tools)
         else:
-            get_proficiency("GET", instruments)
+            get_proficiency("ANY", instruments)
 
+        for ability in ["STRENGTH", "DEXTERITY"]:
+            get_proficiency(ability, saves)
         get_proficiency("SIMPLE", simple_wpns)
         get_proficiency("SHORT SWORD", martial_wpns)
-        get_proficiency("STRENGTH", saves)
-        get_proficiency("DEXTERITY", saves)
 
         monk_skills = [
                     "ACROBATICS",
@@ -3320,11 +3099,11 @@ def get_class():
                     "STEALTH"
                     ]
         for i in range(2):
-            get_skill(monk_skills)
+            get_skill("ANY", monk_skills)
 
         choose_inventory("SHORT SWORD", "SIMPLE WEAPON")
         choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
-        inventory.append("DARTS (x10)")
+        add_inventory("DARTS (x10)")
 
     if chosen_class == "PALADIN":
 
@@ -3358,7 +3137,7 @@ def get_class():
                     "PERFORMANCE",
                 ]
         for i in range(2):
-            get_skill(pal_skills)
+            get_skill("ANY", pal_skills)
     
         choose_inventory("MARTIAL/SHIELD", "TWO MARTIAL WEAPONS")
         choose_inventory("5X JAVELINS", "SIMPLE MELEE")
@@ -3384,11 +3163,8 @@ def get_class():
                         "UNDEAD"
                         ]
         chosen_enemies = []
-        if all_random == True:
-            chosen_enemy = get_item(favored_enemies)
-        else:
-            chosen_enemy = ask_input(favored_enemies)               
-                                                               
+        chosen_enemy = ask_input(favored_enemies)               
+                                                                          
         if chosen_enemy == "HUMANOID":                         
             humanoids = [
                             "AASIMAR",
@@ -3418,13 +3194,8 @@ def get_class():
                             "TIEFLING",
                             "TROGLODYTE",
                             ]
-            if all_random == True:
-                chosen_humanoid_1 = get_item(humanoids)               
-                chosen_humanoid_2 = get_item(humanoids)
-            else:
-                chosen_humanoid_1 = ask_input(humanoids)               
-                chosen_humanoid_2 = ask_input(humanoids)               
-
+            chosen_humanoid_1 = ask_input(humanoids)               
+            chosen_humanoid_2 = ask_input(humanoids)               
             chosen_enemies.append(chosen_humanoid_1)
             chosen_enemies.append(chosen_humanoid_2)
         else:
@@ -3440,10 +3211,7 @@ def get_class():
                         "SWAMP",
                         "UNDERDARK"
                         ]
-        if all_random == True:
-            chosen_terrain = get_item(favored_terrain)
-        else:
-            chosen_terrain = ask_input(favored_terrain)
+        chosen_terrain = ask_input(favored_terrain)
 
         if len(chosen_enemies) > 1:
             chosen_class = "RANGER ({0} WALKER, {1}/{2} HUNTER)".format(chosen_terrain, chosen_humanoid_1, chosen_humanoid_2)
@@ -3519,7 +3287,7 @@ def get_class():
                     "SURVIVAL"
                     ]
         for i in range(2):
-            get_skill(ranger_skills)
+            get_skill("ANY", anger_skills)
 
         choose_inventory("SCALE MAIL", "LEATHER ARMOR")
         choose_inventory("TWO SHORT SWORDS", "TWO SIMPLE MELEE")
@@ -3542,12 +3310,9 @@ def get_class():
         class_features.append("         : Symbols indicate danger/territories/shelter")
         class_features.append("")
             
+        for weapon in ["SIMPLE","HAND XBOW","LONGSWORD","RAPIER","SHORT SWORD"]:
+            get_proficiency(weapon, martial_wpns)
         get_proficiency("LIGHT", armor)
-        get_proficiency("SIMPLE", simple_wpns)
-        get_proficiency("HAND XBOW", martial_wpns)
-        get_proficiency("LONGSWORD", martial_wpns)
-        get_proficiency("RAPIER", martial_wpns)
-        get_proficiency("SHORT SWORD", martial_wpns)
         get_proficiency("THIEVES' TOOLS", tools)
         get_proficiency("DEXTERITY", saves)
         get_proficiency("INTELLIGENCE", saves)
@@ -3568,7 +3333,7 @@ def get_class():
         expertise_skills = ["THIEVES' TOOLS"]
 
         for i in range(4):
-            get_skill(rogue_skills)
+            get_skill("ANY", rogue_skills)
 
         for skill in skill_modifiers:
             if skill_modifiers[(skill)] > 0:
@@ -3584,46 +3349,22 @@ def get_class():
 
     if chosen_class == "SORCERER":
 
-        origin = ["DRACONIC BLOODLINE", "WILD MAGIC", "STORM SORCERY"]
-        if all_random == True:
-            chosen_origin = get_item(origin)
-        else:
-            chosen_origin = ask_input(origin) 
+        origins = ["DRACONIC BLOODLINE", "WILD MAGIC", "STORM SORCERY"]
+        origin = ask_input(origins) 
         
-        class_features.append("SORCERER ({0})".format(chosen_origin))
+        class_features.append("SORCERER ({0})".format(origin))
         class_features.append("")
 
+        get_hit_points(6)
+
         get_spellcasting("CHARISMA", "2")
-
-        get_proficiency("DAGGER", simple_wpns)
-        get_proficiency("DART", simple_wpns)
-        get_proficiency("SLING", simple_wpns)
-        get_proficiency("QUARTERSTAFF", simple_wpns)
-        get_proficiency("CONSTITUTION", saves)
-        get_proficiency("CHARISMA", saves)
-
-        sorc_skills = [
-                    "ARCANA",
-                    "DECEPTION",
-                    "INSIGHT",
-                    "INTIMIDATION",
-                    "PERSUASION",
-                    "PERFORMANCE"
-                    ]
-        for i in range(2):
-            get_skill(sorc_skills)
-
-        choose_inventory("LIGHT XBOW", "SIMPLE WEAPON")
-        choose_inventory("COMPONENT POUCH", "ARCANE FOCUS")
-        choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
-        inventory.append("DAGGER x2")
         
         for i in range(4):
-            get_spell("GET", sorc_spell_0, spellbook_0)
+            get_spell("ANY", sorc_spell_0, spellbook_0)
         for i in range(2):
-            get_spell("GET", sorc_spell_1, spellbook_1)
+            get_spell("ANY", sorc_spell_1, spellbook_1)
 
-        if chosen_origin == "DRACONIC BLOODLINE":
+        if origin == "DRACONIC BLOODLINE":
 
             global draconic_sorc
             draconic_sorc = True
@@ -3642,22 +3383,21 @@ def get_class():
                         "SILVER DRAGON",
                         "WHITE DRAGON"
                         ]
-            
             class_features.append("DRACONIC BLOODLINE: {0}".format(get_item(sorc_bloodline)))
             class_features.append("  : 2x Prof: CHA checks v. Dragons")
-            class_features.append("  : Gain +1 HP per SORCERER level")
+            class_features.append("  : Gain +1 HP per Sorcerer level")
             class_features.append("  : Scales: Unarmored AC = {0} (13+DEX)".format(13 + ability_modifiers["DEXTERITY"]))
             class_features.append("")
 
-        if chosen_origin == "WILD MAGIC":
+        if origin == "WILD MAGIC":
 
             class_features.append("WILD MAGIC: Roll 1d20 on casting spell Lvl 1+ ; 1 sets off Surge")
             class_features.append("  : Roll 1d100 on Surge table to determine effect")
             class_features.append("  : Tides of Chaos: Gain ADV on Attack / Ability / Save")
-            class_features.append("  : 1/day or roll an extra 1d20 on next Surge to regain")
+            class_features.append("        : 1/day or roll an extra 1d20 on next Surge to regain")
             class_features.append("")
 
-        if chosen_origin == "STORM SORCERY":
+        if origin == "STORM SORCERY":
 
             get_proficiency("PRIMORDIAL", languages)
 
@@ -3666,7 +3406,26 @@ def get_class():
             class_features.append("   : without provoking attacks of opportunity")
             class_features.append("")
         
-        get_hit_points(6)
+        for weapon in ["DAGGER","DART","SLING","QUARTERSTAFF"]:
+            get_proficiency(weapon, simple_wpns)
+        get_proficiency("CONSTITUTION", saves)
+        get_proficiency("CHARISMA", saves)
+
+        sorc_skills = [
+                    "ARCANA",
+                    "DECEPTION",
+                    "INSIGHT",
+                    "INTIMIDATION",
+                    "PERSUASION",
+                    "PERFORMANCE"
+                    ]
+        for i in range(2):
+            get_skill("ANY", sorc_skills)
+
+        choose_inventory("LIGHT XBOW", "SIMPLE WEAPON")
+        choose_inventory("COMPONENT POUCH", "ARCANE FOCUS")
+        choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
+        inventory.append("DAGGER x2")
 
     if chosen_class == "WARLOCK":
 
@@ -3678,13 +3437,10 @@ def get_class():
             class_features.append("EXPANDED SPELL LIST: {0}, {1}".format(spell_1, spell_2))
             class_features.append("")
 
-        patron = ["ARCHFEY", "FIEND", "GREAT OLD ONE", "UNDYING", "CELESTIAL"]
-        if all_random == True:
-            chosen_patron = get_item(patron)
-        else:
-            chosen_patron = ask_input(patron)
+        patrons = ["ARCHFEY", "FIEND", "GREAT OLD ONE", "UNDYING", "CELESTIAL"]
+        patron = ask_input(patrons)
         
-        class_features.append("WARLOCK OF THE {0}".format(chosen_patron))
+        class_features.append("WARLOCK OF THE {0}".format(patron))
         class_features.append("")
         
         get_hit_points(8)
@@ -3692,9 +3448,53 @@ def get_class():
         get_spellcasting("CHARISMA", "1")
 
         for i in range(2):
-            get_spell("GET", warlock_spell_0, spellbook_0)
-            get_spell("GET", warlock_spell_1, spellbook_1)
+            get_spell("ANY", warlock_spell_0, spellbook_0)
+            get_spell("ANY", warlock_spell_1, spellbook_1)
 
+        if patron == "THE ARCHFEY":
+
+            expand_spell_list("FAERIE FIRE", "SLEEP")
+            
+            class_features.append("Action (1/SR): 10ft cube: WIS DC {0} v. Charm/Frightened".format(spell_dc))       
+            class_features.append("")
+            
+        if patron == "THE FIEND":
+
+            expand_spell_list("BURNING HANDS", "COMMAND")
+            
+            class_features.append("On dropping an enemy to 0 HP, Gain {0} Temp HP (CHA+Lvl)".format(ability_modifiers["CHARISMA"] + 1))
+            class_features.append("")
+            
+        if patron == "THE GREAT OLD ONE":
+            
+            expand_spell_list("DISSONANT WHISPERS", "TASHA'S HIDEOUS LAUGHTER")
+            
+            class_features.append("Communicate Telepathically within 30ft")
+            class_features.append("")
+            
+        if patron == "THE UNDYING":
+
+            expand_spell_list("FALSE LIFE", "RAY OF SICKNESS")
+
+            class_features.append("ADV: Saving Throws v. Disease")
+            class_features.append("")
+            class_features.append("Undead must make WIS Save (DC {0}) in order to Attack you.".format(spell_dc))
+            class_features.append("      : Undead are immune for 24hrs if you attack them or")
+            class_features.append("      : they make a successful save")
+            class_features.append("")
+            
+        if patron == "THE CELESTIAL":
+
+            expand_spell_list("CURE WOUNDS", "GUIDING BOLT")
+            spellbook_0.append("SACRED FLAME")
+            spellbook_0.append("LIGHT")
+
+            class_features.append("HEALING LIGHT: Pool of 2d6 (1+Lvl)")
+            class_features.append("  [B] Heal 1 creature w/in 60ft from pool,")
+            class_features.append("      Max {0}d6 per use (CHA)".format(ability_modifiers["CHARISMA"]))
+            class_features.append("      Dice replenish after Long Rest")
+            class_features.append("")
+        
         get_proficiency("SIMPLE", simple_wpns)
         get_proficiency("LIGHT", armor)
         get_proficiency("WISDOM", saves)
@@ -3710,57 +3510,13 @@ def get_class():
                     "PERFORMANCE"
                     ]
         for i in range(2):
-            get_skill(warlock_skills)
+            get_skill("ANY", warlock_skills)
 
         choose_inventory("QUARTERSTAFF", "SIMPLE WEAPON")
         choose_inventory("LIGHT XBOW", "SIMPLE WEAPON")
         choose_inventory("COMPONENT POUCH", "ARCANE FOCUS")
         choose_inventory("DUNGEONEER'S PACK", "EXPLORER'S PACK")
         add_inventory(["LEATHER ARMOR", "DAGGER x2"])
-
-        if chosen_patron == "THE ARCHFEY":
-
-            expand_spell_list("FAERIE FIRE", "SLEEP")
-            
-            class_features.append("Action (1/SR): 10ft cube: WIS DC {0} v. Charm/Frightened".format(spell_dc))       
-            class_features.append("")
-            
-        if chosen_patron == "THE FIEND":
-
-            expand_spell_list("BURNING HANDS", "COMMAND")
-            
-            class_features.append("On dropping an enemy to 0 HP, Gain {0} Temp HP (CHA+Lvl)".format(ability_modifiers["CHARISMA"] + 1))
-            class_features.append("")
-            
-        if chosen_patron == "THE GREAT OLD ONE":
-            
-            expand_spell_list("DISSONANT WHISPERS", "TASHA'S HIDEOUS LAUGHTER")
-            
-            class_features.append("Communicate Telepathically within 30ft")
-            class_features.append("")
-            
-        if chosen_patron == "THE UNDYING":
-
-            expand_spell_list("FALSE LIFE", "RAY OF SICKNESS")
-
-            class_features.append("ADV: Saving Throws v. Disease")
-            class_features.append("")
-            class_features.append("Undead must make WIS Save (DC {0}) in order to Attack you.".format(spell_dc))
-            class_features.append("      : Undead are immune for 24hrs if you attack them or")
-            class_features.append("      : they make a successful save")
-            class_features.append("")
-            
-        if chosen_patron == "THE CELESTIAL":
-
-            expand_spell_list("CURE WOUNDS", "GUIDING BOLT")
-            spellbook_0.append("SACRED FLAME")
-            spellbook_0.append("LIGHT")
-
-            class_features.append("HEALING LIGHT: Pool of 2d6 (1+Lvl)")
-            class_features.append("  [B] Heal 1 creature w/in 60ft from pool,")
-            class_features.append("      Max {0}d6 per use (CHA)".format(ability_modifiers["CHARISMA"]))
-            class_features.append("      Dice replenish after Long Rest")
-            class_features.append("")
             
     if chosen_class == "WIZARD":
 
@@ -3777,10 +3533,10 @@ def get_class():
         
         # Gain 3 Wizard Cantrips    
         for i in range(3):
-            get_spell("GET", wiz_spell_0, spellbook_0)
+            get_spell("ANY", wiz_spell_0, spellbook_0)
         # Gain 6 Lv 1 Wizard Spells
         for i in range(6):
-            get_spell("GET", wiz_spell_1, spellbook_1)
+            get_spell("ANY", wiz_spell_1, spellbook_1)
 
         get_proficiency("DAGGER", simple_wpns)
         get_proficiency("DART", simple_wpns)
@@ -3799,7 +3555,7 @@ def get_class():
                     "PERFORMANCE"
                     ]
         for i in range(2):
-            get_skill(wiz_skills)
+            get_skill("ANY", wiz_skills)
 
         choose_inventory("QUARTERSTAFF", "DAGGER")
         choose_inventory("COMPONENT POUCH", "ARCANE FOCUS")
@@ -3849,24 +3605,32 @@ def get_bg():
         if skill_modifiers[(skill1)] == 0:
             skill_modifiers[(skill1)] += 2
         else:
-            skill1 = get_skill(avail_skills)
+            skill1 = get_skill("ANY", avail_skills)
 
         if skill_modifiers[(skill2)] == 0:
             skill_modifiers[(skill2)] += 2
         else:
-            skill2 = get_skill(avail_skills)
+            skill2 = get_skill("ANY", avail_skills)
         
         bg_features.append("SKILL PROFICIENCIES: {0} / {1}".format(skill1, skill2))
         bg_features.append("")
 
-    if all_random == True:
-            chosen_bg = get_item(backgrounds)
-    else:
-        chosen_bg = ask_input(backgrounds)
+    chosen_bg = ask_input(backgrounds)
 
     if chosen_bg == "ACOLYTE":
         
+        bg_origins = [
+                    "I found refuge in a temple after running away at an early age.",
+                    "I was left at a temple by a family unable or unwilling to care for me.",
+                    "I grew up in a household with strong religious convictions.",
+                    "An impassioned sermon struck a chord deep in my soul and moved me to service",
+                    "I followed friend / elder / loved one into religious service.",
+                    "I was inspired after a personal encounter with a celestial being."
+                    ]
+        
         bg_features.append(chosen_bg)
+        bg_features.append("")
+        get_quirk("ORIGIN", bg_origins)
         bg_features.append("")
         bg_features.append("SHELTER OF THE FAITHFUL: Can perform religious ceremonies")
         bg_features.append("    : Command respect of other devotees")
@@ -3878,7 +3642,7 @@ def get_bg():
         bg_skills("DECEPTION", "PERFORMANCE")
 
         for i in range(2):
-            get_proficiency("GET", languages)
+            get_proficiency("ANY", languages)
 
         acolyte_inventory = [
                             "HOLY SYMBOL",
@@ -3890,14 +3654,6 @@ def get_bg():
         for item in acolyte_inventory:
             inventory.append(item)
 
-        bg_origins = [
-            "I found refuge in a temple after running away at an early age.",
-            "I was left at a temple by a family unable or unwilling to care for me.",
-            "I grew up in a household with strong religious convictions.",
-            "An impassioned sermon struck a chord deep in my soul and moved me to service",
-            "I followed friend / elder / loved one into religious service.",
-            "I was inspired after a personal encounter with a celestial being."
-            ]
         bg_trait = [
                     "I idolize a particular hero and constantly refer to their deeds and example.",
                     "I find common ground between the fiercest enemies and always work towards peace.",
@@ -3932,8 +3688,6 @@ def get_bg():
                     "I am suspicious of strangers and expect the worst of them.",
                     "I become obsessed with a particular goal to the detriment of other needs."
                     ]
-
-        get_quirk("ORIGIN", bg_origins)
         get_quirks()
 
     if chosen_bg == "CHARLATAN":
@@ -4025,7 +3779,7 @@ def get_bg():
 
         bg_skills("DECEPTION", "STEALTH")
 
-        get_proficiency("GET", gaming_sets)
+        get_proficiency("ANY", gaming_sets)
         get_proficiency("THIEVES' TOOLS", tools)
 
         criminal_inventory = [
@@ -4096,7 +3850,7 @@ def get_bg():
 
         bg_skills("ACROBATICS", "PERFORMANCE")
 
-        get_proficiency("GET", instruments)
+        get_proficiency("ANY", instruments)
         get_proficiency("DISGUISE KIT", tools)
 
         ent_inventory = [
@@ -4164,7 +3918,7 @@ def get_bg():
 
         bg_skills("ANIMAL HANDLING", "SURVIVAL")
 
-        get_proficiency("GET", tools)
+        get_proficiency("ANY", tools)
         get_proficiency("LAND", vehicles)
 
         inventory.append("Shovel")
@@ -4332,7 +4086,7 @@ def get_bg():
         
         bg_skills("MEDICINE", "PERSUASION")
 
-        get_proficiency("GET", languages)
+        get_proficiency("ANY", languages)
         get_proficiency("HERBALISM KIT", tools)
 
         inventory.append("Herbalism Kit")
@@ -4390,8 +4144,8 @@ def get_bg():
         
         bg_skills("HISTORY", "PERSUASION")
 
-        get_proficiency("GET", gaming_sets)
-        get_proficiency("GET", languages)
+        get_proficiency("ANY", gaming_sets)
+        get_proficiency("ANY", languages)
 
         inventory.append("Fine Clothes")
         inventory.append("Signet Ring")
@@ -4459,8 +4213,8 @@ def get_bg():
         
         bg_skills("ATHLETICS", "SURVIVAL")
 
-        get_proficiency("GET", instruments)
-        get_proficiency("GET", languages)
+        get_proficiency("ANY", instruments)
+        get_proficiency("ANY", languages)
 
         inventory.append("STAFF")
         inventory.append("HUNTING TRAP")
@@ -4527,7 +4281,7 @@ def get_bg():
         bg_skills("ARCANA", "HISTORY")
 
         for i in range(2):
-            get_proficiency("GET", languages)
+            get_proficiency("ANY", languages)
 
         inventory.append("Bottle of black ink")
         inventory.append("Quill")
@@ -4650,7 +4404,7 @@ def get_bg():
 
         bg_skills("ATHLETICS", "INTIMIDATION")
 
-        get_proficiency("GET", gaming_sets)
+        get_proficiency("ANY", gaming_sets)
         get_proficiency("LAND", vehicles)
 
         inventory.append("Insignia of Rank")
@@ -5026,117 +4780,55 @@ get_story()
 ###     CHAR SHEET     ###
 #####                #####
 
-sleep(1)
-print ("----------------------------")
-print ("ATTRIBUTES / MODIFIERS: ")
-print ("----------------------------")
-print ()
-sleep(1)
-
-for item in ability_scores:
-    if ability_modifiers[(item)] > 0:
-        print ("{0}: {1} (Mod: +{2})".format(item, ability_scores[item], ability_modifiers[item]))
-    else:
-        print ("{0}: {1} (Mod: {2})".format(item, ability_scores[item], ability_modifiers[item]))
+def display_character(category, source_list):
     print ()
-sleep(3)
-
-print ("----------------------------")
-print ("SKILL CHECK BONUS: ")
-print ("----------------------------")
-print ()
-sleep(1)
-
-for skill in skill_modifiers:
-    
-    #   Add the relevant ability modifier
-    skill_modifiers[skill] += ability_modifiers[skill_to_ability[skill]]
-    
-    #   If the modifer is not a straight roll, print the bonus
-    if skill_modifiers[skill] != 0:                               
-        if skill_modifiers[skill] > 0:                                     
-            print ("{0}: +{1}".format(skill, skill_modifiers[(skill)]))     
-        else:
-            print ("{0}: {1}".format(skill, skill_modifiers[(skill)]))
-sleep(3)
-
-print ()
-print ("----------------------------")
-print ("RACIAL FEATURES:")
-print ("----------------------------")
-print ()
-sleep(1)
-
-for item in race_features:
-    print (item)
-sleep(3)
-
-print ()
-print ("----------------------------")
-print ("CLASS FEATURES:")
-print ("----------------------------")
-print ()
-sleep(1)
-
-for item in class_features:
-    print (item)
-sleep(3)
-
-print ()
-print ("----------------------------")
-print ("BACKGROUND FEATURES:")
-print ("----------------------------")
-print ()
-sleep(1)
-
-for item in bg_features:
-    print (item)
-sleep(3)
-
-print ()
-print ("----------------------------")
-print ("CHARACTER HISTORY:")
-print ("----------------------------")
-print ()
-sleep(1)
-
-for item in char_history:
-    print (item)
-sleep(3)
-
-print ()
-print ("----------------------------")
-print ("PROFICIENCIES: ")
-print ("----------------------------")
-print ()
-sleep(1)
-
-# proficiencies = unique_everseen(proficiencies)
-proficiencies = sorted(proficiencies)   # Alphabetize list to sort by type
-for item in proficiencies:
-    print (item)
-sleep(3)
-
-print ()
-print ("----------------------------")
-print ("INVENTORY:")
-print ("----------------------------")
-print ()
-sleep(1)
-
-for item in inventory:
-    print (item)
-sleep(3)
-
-if len(spellbook_0) > 1 or len(spellbook_1) > 1:  # Only print Spellbook for Spellcasters
-    print ()
-    print ("----------------------------")          
-    print ("SPELLBOOK:")                            
+    print ("----------------------------")
+    print ("{0}:".format(category))
     print ("----------------------------")
     print ()
     sleep(1)
 
-    for book in spellbook:
-        for item in book:
+    if source_list == ability_modifiers:
+        print_ability_scores()
+
+    elif source_list == skill_modifiers:
+        for skill in skill_modifiers:
+    
+            skill_modifiers[skill] += ability_modifiers[skill_to_ability[skill]]
+            
+            if skill_modifiers[skill] != 0:                               
+                if skill_modifiers[skill] > 0:                                     
+                    print ("{0}: +{1}".format(skill, skill_modifiers[(skill)]))     
+                else:
+                    print ("{0}: {1}".format(skill, skill_modifiers[(skill)]))
+    
+    elif source_list == spellbook:
+        for book in spellbook:
+            for item in book:
+                print (item)
+            print ()
+    
+    else:
+        for item in source_list:
             print (item)
-        print ()
+    sleep(3)
+
+display_character("ABILITY SCORES", ability_modifiers)
+
+display_character("SKILLS", skill_modifiers)
+
+display_character("RACIAL FEATURES", race_features)
+
+display_character("CLASS FEATURES", class_features)
+
+display_character("BACKGROUND FEATURES", bg_features)
+
+display_character("CHARACTER HISTORY", char_history)
+
+proficiencies = sorted(proficiencies)
+display_character("PROFICIENCIES", proficiencies)
+
+display_character("INVENTORY", inventory)
+
+if len(spellbook_0) > 1 or len(spellbook_1) > 1:
+    display_character("SPELLBOOK", spellbook)
